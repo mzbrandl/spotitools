@@ -38,7 +38,7 @@ var stateKey = "spotify_auth_state";
 var app = express();
 
 app
-  .use(express.static(__dirname + "/public"))
+  .use(express.static(__dirname + "/client/build"))
   .use(cors())
   .use(cookieParser());
 
@@ -109,10 +109,12 @@ app.get("/callback", function (req, res) {
         });
 
         res.cookie("accessToken", access_token);
-        res.cookie("refreshToken", refresh_token);
+        res.cookie("refreshToken", refresh_token, {
+          expires: new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000),
+        });
 
         // we can also pass the token to the browser to make requests from there
-        res.redirect("/#");
+        res.redirect("/");
       } else {
         res.redirect(
           "/#" +
