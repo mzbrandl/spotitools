@@ -1,0 +1,31 @@
+{
+  "name": "spotitools",
+  "version": "1.0.0",
+  "description": "Spotitools is a web app using the Spotify API. It provides additional functionality, like combining playlists or checking which playlists contain a song.",
+  "main": "src/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon ./src/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mzbrandl/spotitools.git"
+  },
+  "keywords": [],
+  "author": "Moritz Brandl",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mzbrandl/spotitools/issues"
+  },
+  "homepage": "https://github.com/mzbrandl/spotitools#readme",
+  "dependencies": {
+    "cookie-parser": "^1.4.5",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "querystring": "^0.2.0",
+    "request": "^2.88.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
+  }
+}
