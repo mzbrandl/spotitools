@@ -36,4 +36,6 @@ export default interface ISpotifyService {
     query: string,
     limit?: number
   ): Promise<SpotifyApi.SearchResponse>;
+
+  getCurrentPlayback(): Promise<SpotifyApi.CurrentPlaybackResponse>;
 }

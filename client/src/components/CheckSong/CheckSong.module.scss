@@ -2,4 +2,36 @@
   input {
     color: black;
   }
+
+  .controls {
+    display: flex;
+    flex-direction: row;
+    margin: 0.5em 1em;
+    justify-content: space-between;
+
+    .filter {
+      color: #b3b3b3;
+      background-color: #282828;
+      border-style: none;
+      height: 2em;
+      padding: 0.2em 1em;
+      border-radius: 5px;
+      font-size: 12pt;
+      font-weight: 600;
+      width: -moz-available;
+      width: -webkit-fill-available;
+      margin-right: 1em;
+    }
+
+    .button {
+      color: #b3b3b3;
+      background-color: #282828;
+      border-style: none;
+      height: 2em;
+      padding: 0.2em 1em;
+      border-radius: 5px;
+      font-size: 12pt;
+      font-weight: 600;
+    }
+  }
 }

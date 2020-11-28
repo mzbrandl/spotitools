@@ -135,7 +135,7 @@ export default class SpotifyService implements ISpotifyService {
       ).then(async (res) => {
         // handle spotify API rate-limiting
         if (res.headers.get("retry-after")) {
-          console.log(res.headers.get("retry-after"));
+          console.log("retry-after: " + res.headers.get("retry-after"));
           await sleep(Number(res.headers.get("retry-after")) * 1000);
           return await getPlaylistTracksRecursive(playlist, offset);
         }
@@ -178,6 +178,10 @@ export default class SpotifyService implements ISpotifyService {
     );
     return uniqueAccumulatedTracks;
   };
+
+  public async getCurrentPlayback(): Promise<SpotifyApi.CurrentPlaybackResponse> {
+    return await this.spotifyApi.getMyCurrentPlaybackState();
+  }
 }
 
 /**

@@ -1,0 +1,144 @@
+.playlistCombiner {
+  display: flex;
+  flex-direction: column;
+  max-width: 1000px;
+  margin: 0 auto;
+  width: calc(100vw - (100vw - 100%));
+  background-color: #121212;
+  color: #fefefe;
+  // overflow-x: hidden;
+  // overflow-y: hidden;
+
+  // @media screen and (max-width: 760px){
+  //   .container{ width: 100vw; margin: 0; padding: 0; }
+  // }
+
+  > h1 {
+    align-self: center;
+    margin-left: 1vw;
+    margin-right: 1vw;
+  }
+
+  > p {
+    align-self: center;
+    margin-bottom: 1em;
+    margin-left: 1em;
+    margin-right: 1em;
+  }
+
+  .loginButton {
+    margin-top: 2em;
+    align-self: center;
+    background-color: #1db954;
+    border-style: none;
+    opacity: 1;
+    padding: 0;
+    border-radius: 25px;
+    height: 50px;
+    width: 180px;
+    font-weight: 600;
+    color: white;
+    font-size: 12pt;
+  }
+
+  .horWraper {
+    display: flex;
+    justify-content: space-between;
+
+    .playlistRows {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      margin-left: 1vw;
+      margin-right: 1vw;
+      padding-top: 1vw;
+
+      p {
+        margin-top: 0px;
+      }
+
+      .controls {
+        display: flex;
+        flex-direction: row;
+        margin: 0.5em 1em;
+        justify-content: space-between;
+
+        .filter {
+          color: #b3b3b3;
+          background-color: #282828;
+          border-style: none;
+          height: 2em;
+          padding: 0.2em 1em;
+          border-radius: 5px;
+          font-size: 12pt;
+          font-weight: 600;
+          width: -moz-available;
+          width: -webkit-fill-available;
+          margin-right: 1em;
+        }
+
+        .clearBtn {
+          color: #b3b3b3;
+          background-color: #282828;
+          border-style: none;
+          height: 2em;
+          padding: 0.2em 1em;
+          border-radius: 5px;
+          font-size: 12pt;
+          font-weight: 600;
+        }
+      }
+
+      .loadingPlaylists {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        justify-content: center;
+        margin-top: 2em;
+
+        text {
+          margin-top: 0.5em;
+          color: #b3b3b3;
+        }
+      }
+    }
+
+    .createButton {
+      position: fixed;
+      right: 1em;
+      bottom: 3em;
+      background-color: #1db954;
+      border-style: none;
+      opacity: 1;
+      width: 50px;
+      height: 50px;
+      padding: 0;
+      border-radius: 25px;
+      transition: opacity 0.5s;
+
+      > img {
+        width: 50px;
+        height: 50px;
+      }
+    }
+
+    .hide {
+      opacity: 0;
+      transition: opacity 0.5s;
+      position: fixed;
+      right: 1em;
+      bottom: 3em;
+      background-color: #1db954;
+      border-style: none;
+      width: 50px;
+      height: 50px;
+      padding: 0;
+      border-radius: 25px;
+
+      > img {
+        width: 50px;
+        height: 50px;
+      }
+    }
+  }
+}

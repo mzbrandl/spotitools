@@ -28,14 +28,14 @@ export const HomeView = ({ isLoggedIn }: IHomeViewProps) => {
       {isLoggedIn && (
         <div className={styles.links}>
           <Link to="/check-song">
-            Check which of your playlists contain a specific song
+            Check which of your playlists contain a specific song.
           </Link>
           <Link to="/queue-playlists">
-            Create a queue that containins the songs of multiple playlists
+            Create a queue made up of multiple playlists.
           </Link>
-          <Link to="/combine-playlists">
+          {/* <Link to="/combine-playlists">
             Combine multiple playlists to a new playlist which updates itself
-          </Link>
+          </Link> */}
         </div>
       )}
     </div>
