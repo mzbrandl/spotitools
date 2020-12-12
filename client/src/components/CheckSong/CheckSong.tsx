@@ -1,33 +1,48 @@
 import React, { useState, useContext, useEffect } from "react";
+import { ClipLoader } from "react-spinners";
+import { css } from "@emotion/core";
+
+import { SpotifyServiceContext } from "../../App";
+import { ListResult } from "../ListResult/ListResult";
 
 import styles from "./CheckSong.module.scss";
-import { SpotifyServiceContext } from "../../App";
 
 export const CheckSong = () => {
   const spotifyService = useContext(SpotifyServiceContext);
   const [query, setQuery] = useState("");
-  const [searchResult, setSearchResult] = useState<
-    SpotifyApi.SearchResponse | undefined
+  const [searchResultTracks, setSearchResultTracks] = useState<
+    SpotifyApi.TrackObjectFull[] | undefined | null
   >(undefined);
-  const [
-    currentPlayback,
-    setCurrentPlayback,
-  ] = useState<SpotifyApi.CurrentPlaybackResponse>();
-  const [playlists, setPlaylists] = useState([] as any);
+  const [track, setTrack] = useState<SpotifyApi.TrackObjectFull>();
+  const [playlistsAndTracks, setPlaylistsAndTracks] = useState<
+    {
+      playlist: SpotifyApi.PlaylistObjectSimplified;
+      items: SpotifyApi.PlaylistTrackObject[];
+    }[]
+  >();
 
   useEffect(() => {
     spotifyService?.getCurrentPlayback().then((res) => {
-      setCurrentPlayback(res);
-      res.item?.name && setQuery(res.item?.name);
+      res.item?.name && setTrack(res.item);
     });
+  }, [spotifyService]);
 
-    if (currentPlayback?.item) {
-      spotifyService
-        ?.checkPlaylistsForTrack(currentPlayback?.item)
-        .then((res) => setPlaylists([...res]));
-      console.log(playlists);
+  useEffect(() => {
+    spotifyService?.getPlaylistsAndTracks().then((res) => {
+      setPlaylistsAndTracks(res);
+    });
+  }, [spotifyService]);
+
+  const onSearch = async () => {
+    if (query) {
+      const res = await (await spotifyService?.searchTracks(query))?.tracks
+        ?.items;
+      setSearchResultTracks(res);
+    } else {
+      const res = await (await spotifyService?.getCurrentPlayback())?.item;
+      res && setTrack(res);
     }
-  }, [spotifyService, currentPlayback]);
+  };
 
   return (
     <div className={styles.checkSong}>
@@ -37,30 +52,81 @@ export const CheckSong = () => {
           className={styles.filter}
           placeholder="Filter"
           value={query}
+          onKeyDown={async (e) => e.keyCode === 13 && onSearch()}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <input
+        <button
           className={styles.button}
-          type="submit"
           name="search"
           id="submit"
-          onClick={async () =>
-            setSearchResult(await spotifyService?.searchTracks(query))
-          }
-        />
+          onClick={async () => onSearch()}
+        >
+          Search
+        </button>
       </div>
 
-      {playlists && playlists.map((playlist: any) => <p>{playlist.name}</p>)}
+      {track && !searchResultTracks && (
+        <ListResult
+          key={track.id}
+          id={track.id}
+          title={track.name}
+          author={track.artists.map((a) => a.name)}
+          cover={track.album.images[0]}
+          isChecked={true}
+          handelClick={() => setTrack(undefined)}
+        />
+      )}
 
-      {searchResult &&
-        searchResult.tracks?.items.map((track) => (
-          <div style={{ display: "flex", flexDirection: "row" }}>
-            <h3>{track.name}</h3>
-            <p>{` by ${track.artists
-              .map((artist) => artist.name)
-              .toString()}`}</p>
-          </div>
+      {searchResultTracks &&
+        searchResultTracks.map((t) => (
+          <ListResult
+            key={t.id}
+            id={t.id}
+            title={t.name}
+            author={t.artists.map((a) => a.name)}
+            cover={t.album.images[0]}
+            isChecked={t.id === track?.id}
+            handelClick={() => {
+              setTrack(t);
+              setSearchResultTracks(undefined);
+            }}
+          />
         ))}
+
+      {playlistsAndTracks ? (
+        track && (
+          <>
+            <h3 style={{ textAlign: "left" }}>Found in following playlists:</h3>
+            {playlistsAndTracks
+              .filter((p) =>
+                p.items.map((i) => i.track).some((t) => t.id === track.id)
+              )
+              .map((pt, i) => (
+                <ListResult
+                  key={pt.playlist.id}
+                  id={pt.playlist.id}
+                  title={pt.playlist.name}
+                  author={
+                    pt.items.find((i) => i.track.id === track.id)?.added_at
+                  }
+                  cover={pt.playlist.images[0]}
+                />
+              ))}
+          </>
+        )
+      ) : (
+        <div className={styles.loadingPlaylists}>
+          <ClipLoader
+            css={css`
+              align-self: center;
+            `}
+            size={30}
+            color={"#1db954"}
+            loading={true}
+          />
+          <span>Loading playlists...</span>
+        </div>
+      )}
     </div>
   );
 };

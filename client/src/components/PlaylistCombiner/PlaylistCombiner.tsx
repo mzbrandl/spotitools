@@ -2,9 +2,9 @@ import React, { useContext, useEffect, useState } from "react";
 import ClipLoader from "react-spinners/ClipLoader";
 import { css } from "@emotion/core";
 
-import { PlaylistRow } from "./PlaylistRow/PlaylistRow";
 import { SpotifyServiceContext } from "../../App";
 import * as Play from "../../assets/play.png";
+import { ListResult } from "../ListResult/ListResult";
 
 import styles from "./PlaylistCombiner.module.scss";
 
@@ -32,11 +32,10 @@ export const PlaylistCombiner = () => {
     setFilter("");
   };
 
-  const handelSelectedPlaylists = (
-    playlist: SpotifyApi.PlaylistObjectSimplified,
-    isChecked: boolean
-  ) => {
+  const handelSelectedPlaylists = (id: string, isChecked: boolean) => {
     const selectedPlaylistsUpdated = selectedPlaylists;
+
+    const playlist = playlists.filter((p) => p.id === id)[0];
 
     isChecked
       ? selectedPlaylistsUpdated.push(playlist)
@@ -80,11 +79,14 @@ export const PlaylistCombiner = () => {
                     .includes(filter.toLowerCase())
               )
               .map((playlist, key) => (
-                <PlaylistRow
-                  playlist={playlist}
+                <ListResult
                   key={key}
+                  id={playlist.id}
+                  title={playlist.name}
+                  author={playlist.owner.display_name}
+                  cover={playlist.images[0]}
                   isChecked={selectedPlaylists.includes(playlist)}
-                  handelSelectedPlaylists={handelSelectedPlaylists}
+                  handelClick={handelSelectedPlaylists}
                 />
               ))
           ) : (

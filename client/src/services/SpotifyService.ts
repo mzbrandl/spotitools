@@ -82,6 +82,24 @@ export default class SpotifyService implements ISpotifyService {
     return filteredPlaylists;
   }
 
+  public async getPlaylistsAndTracks(): Promise<
+    {
+      playlist: SpotifyApi.PlaylistObjectSimplified;
+      items: SpotifyApi.PlaylistTrackObject[];
+    }[]
+  > {
+    const playlists = (await this.getPlaylists()).filter(
+      (playlist) =>
+        playlist.owner.id === this.userId || playlist.collaborative === true
+    );
+
+    return await Promise.all(
+      playlists.map(async (playlist) => {
+        return { playlist, items: await this.getPlaylistTracks(playlist) };
+      })
+    );
+  }
+
   public async searchTracks(
     query: string,
     limit?: number

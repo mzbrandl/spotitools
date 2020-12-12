@@ -8,7 +8,7 @@ export interface IListResultProps {
   cover: SpotifyApi.ImageObject;
   author?: string | string[];
   isChecked?: boolean;
-  handelClick(id: string, isChecked: boolean): void;
+  handelClick?(id: string, isChecked: boolean): void;
 }
 
 export const ListResult = ({
@@ -22,7 +22,7 @@ export const ListResult = ({
   return (
     <div
       className={styles.listResult}
-      onClick={(_e) => handelClick(id, !isChecked)}
+      onClick={(_e) => handelClick && handelClick(id, !isChecked)}
     >
       <div className={styles.overlay}>
         <img

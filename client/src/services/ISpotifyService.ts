@@ -23,6 +23,16 @@ export default interface ISpotifyService {
   ): Promise<SpotifyApi.PlaylistObjectSimplified[]>;
 
   /**
+   * Returns the Playlists with corresponding tracks of the current user.
+   */
+  getPlaylistsAndTracks(): Promise<
+    {
+      playlist: SpotifyApi.PlaylistObjectSimplified;
+      items: SpotifyApi.PlaylistTrackObject[];
+    }[]
+  >;
+
+  /**
    * Returns the last played track uf the current user or null.
    */
   getLatestPlaybackItem(): Promise<SpotifyApi.TrackObjectFull | null>;

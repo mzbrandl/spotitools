@@ -1,6 +1,25 @@
 .checkSong {
+  display: flex;
+  flex-direction: column;
+  max-width: 800px;
+  margin: 0 auto;
+  width: calc(100vw - (100vw - 100%));
+
   input {
     color: black;
+  }
+
+  .loadingPlaylists {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    margin-top: 2em;
+
+    text {
+      margin-top: 0.5em;
+      color: #b3b3b3;
+    }
   }
 
   .controls {
@@ -18,8 +37,8 @@
       border-radius: 5px;
       font-size: 12pt;
       font-weight: 600;
-      width: -moz-available;
       width: -webkit-fill-available;
+      width: -moz-available;
       margin-right: 1em;
     }
 

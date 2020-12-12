@@ -49,8 +49,14 @@
     flex-direction: column;
 
     > a {
-      color: white;
+      color: #1db753;
       text-decoration: underline;
+      margin: 0.5em;
+    }
+
+    > p {
+      color: white;
+      text-decoration: none;
       margin: 0.5em;
     }
   }
