@@ -15,7 +15,7 @@ var cookieParser = require("cookie-parser");
 
 var client_id = "a1b90597cc8449c89089422a31b8bfa1"; // Your client id
 var client_secret = require("./client_secret.json"); // Your secret
-var redirect_uri = "http://localhost:8888/callback"; // Your redirect uri
+var redirect_uri = "http://localhost:8080/callback"; // Your redirect uri
 
 /**
  * Generates a random string containing numbers and letters
@@ -166,5 +166,5 @@ app.get("/refresh_token", function (req, res) {
 
 app.use("*", express.static(__dirname + "/client/build"));
 
-console.log("Listening on 8888");
-app.listen(8888);
+console.log("Listening on 8080");
+app.listen(8080);
