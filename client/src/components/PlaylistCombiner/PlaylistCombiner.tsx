@@ -83,7 +83,7 @@ export const PlaylistCombiner = () => {
                   key={key}
                   id={playlist.id}
                   title={playlist.name}
-                  author={playlist.owner.display_name}
+                  secondaryText={`by ${playlist.owner.display_name}`}
                   cover={playlist.images[0]}
                   isChecked={selectedPlaylists.includes(playlist)}
                   handelClick={handelSelectedPlaylists}

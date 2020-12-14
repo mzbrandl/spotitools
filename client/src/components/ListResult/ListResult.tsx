@@ -6,7 +6,7 @@ export interface IListResultProps {
   id: string;
   title: string;
   cover: SpotifyApi.ImageObject;
-  author?: string | string[];
+  secondaryText?: string;
   isChecked?: boolean;
   handelClick?(id: string, isChecked: boolean): void;
 }
@@ -14,7 +14,7 @@ export interface IListResultProps {
 export const ListResult = ({
   id,
   title,
-  author,
+  secondaryText,
   cover,
   isChecked,
   handelClick,
@@ -34,9 +34,9 @@ export const ListResult = ({
         ></img>
         <div className={styles.textWrapper}>
           <h5>{title}</h5>
-          {author && (
+          {secondaryText && (
             <div className={styles.subInfo}>
-              <p>by {author.toString()} </p>
+              <p>{secondaryText}</p>
             </div>
           )}
         </div>

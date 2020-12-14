@@ -46,11 +46,15 @@ export const CheckSong = () => {
 
   return (
     <div className={styles.checkSong}>
+      <p>
+        Check which of your playlists contain your last played song. You can
+        also search for a song and check it.
+      </p>
       <div className={styles.controls}>
         <input
           type="search"
           className={styles.filter}
-          placeholder="Filter"
+          placeholder="Search song..."
           value={query}
           onKeyDown={async (e) => e.keyCode === 13 && onSearch()}
           onChange={(e) => setQuery(e.target.value)}
@@ -70,7 +74,7 @@ export const CheckSong = () => {
           key={track.id}
           id={track.id}
           title={track.name}
-          author={track.artists.map((a) => a.name)}
+          secondaryText={`by ${track.artists.map((a) => a.name).toString()}`}
           cover={track.album.images[0]}
           isChecked={true}
           handelClick={() => setTrack(undefined)}
@@ -83,7 +87,7 @@ export const CheckSong = () => {
             key={t.id}
             id={t.id}
             title={t.name}
-            author={t.artists.map((a) => a.name)}
+            secondaryText={`by ${t.artists.map((a) => a.name).toString()}`}
             cover={t.album.images[0]}
             isChecked={t.id === track?.id}
             handelClick={() => {
@@ -96,7 +100,7 @@ export const CheckSong = () => {
       {playlistsAndTracks ? (
         track && (
           <>
-            <h3 style={{ textAlign: "left" }}>Found in following playlists:</h3>
+            <h3>Found in following playlists:</h3>
             {playlistsAndTracks
               .filter((p) =>
                 p.items.map((i) => i.track).some((t) => t.id === track.id)
@@ -106,10 +110,12 @@ export const CheckSong = () => {
                   key={pt.playlist.id}
                   id={pt.playlist.id}
                   title={pt.playlist.name}
-                  author={
-                    pt.items.find((i) => i.track.id === track.id)?.added_at
-                  }
+                  secondaryText={`added on ${new Date(
+                    pt.items.find((i) => i.track.id === track.id)
+                      ?.added_at as string
+                  ).toLocaleDateString()}`}
                   cover={pt.playlist.images[0]}
+                  handelClick={() => window.location.href =pt.playlist.external_urls.spotify}
                 />
               ))}
           </>

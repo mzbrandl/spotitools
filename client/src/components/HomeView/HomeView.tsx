@@ -12,8 +12,10 @@ export const HomeView = ({ isLoggedIn }: IHomeViewProps) => {
     <div className={styles.homeView}>
       <h1>Spotitools</h1>
       <p>
-        Spotitools offers additional functionality, that missing in the default
-        Spotify applications.
+        Spotitools offers additional functionality, missing in the default
+        Spotify applications. <br/> I mostly built this site for my personal usage 
+        but thought, other people might also enjoy these functionalities.
+        You can view the source code on <a href="https://github.com/mzbrandl/spotitools">GitHub</a>.
       </p>
 
       {!isLoggedIn && (
