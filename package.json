@@ -5,7 +5,7 @@
   "main": "src/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon ./server.js",
+    "start": "node ./server.js",
     "build": "npm install --prefix ./client && npm run build --prefix ./client",
     "client-install": "npm install --prefix ./client",
     "server": "nodemon ./server.js",
