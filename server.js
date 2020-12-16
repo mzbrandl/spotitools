@@ -14,8 +14,10 @@ var querystring = require("querystring");
 var cookieParser = require("cookie-parser");
 
 var client_id = "a1b90597cc8449c89089422a31b8bfa1"; // Your client id
-var client_secret = process.env.CLIENT_SECRET; //require("./client_secret.json"); // Your secret
+var client_secret = require("./client_secret.json"); // Your secret
 var redirect_uri = "https://spotitools.herokuapp.com/callback"; // Your redirect uri
+
+const PORT = process.env.PORT || 8080;
 
 /**
  * Generates a random string containing numbers and letters
@@ -166,5 +168,5 @@ app.get("/refresh_token", function (req, res) {
 
 app.use("*", express.static(__dirname + "/client/build"));
 
-console.log("Listening on " + process.env.PORT || 8080);
-app.listen(process.env.PORT || 8080);
+console.log("Listening on " + PORT);
+app.listen(PORT);
