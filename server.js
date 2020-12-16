@@ -15,7 +15,7 @@ var cookieParser = require("cookie-parser");
 
 var client_id = "a1b90597cc8449c89089422a31b8bfa1"; // Your client id
 var client_secret = require("./client_secret.json"); // Your secret
-var redirect_uri = "https://spotitools.herokuapp.com/callback"; // Your redirect uri
+var redirect_uri = "https://www.spotitools.com/callback/"; // Your redirect uri
 
 const PORT = process.env.PORT || 8080;
 
