@@ -48,4 +48,10 @@ export default interface ISpotifyService {
   ): Promise<SpotifyApi.SearchResponse>;
 
   getCurrentPlayback(): Promise<SpotifyApi.CurrentPlaybackResponse>;
+
+  getRecentlyAddedTracks(): Promise<TrackWithPlaylistName[]>;
+}
+
+export interface TrackWithPlaylistName extends SpotifyApi.PlaylistTrackObject {
+  playlistName: string;
 }
