@@ -1,5 +1,6 @@
 #client_secret
 client_secret.json
+monthlyExportUsers.json
 
 # Logs
 logs

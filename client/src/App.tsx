@@ -9,6 +9,7 @@ import "./App.css";
 import ISpotifyService from "./services/ISpotifyService";
 import { PlaylistCombiner } from "./components/PlaylistCombiner/PlaylistCombiner";
 import { RecentlyAdded } from "./components/RecentlyAdded/RecentlyAdded";
+import { TopTracksExport } from "./components/TopTracksExport/TopTracksExport";
 
 export const SpotifyServiceContext = React.createContext(
   {} as ISpotifyService | undefined
@@ -54,6 +55,12 @@ export const App = () => {
                 <h1>Spotitools</h1>
               </Link>
               <PlaylistCombiner />
+            </Route>
+            <Route path="/top-songs-export">
+              <Link to="/">
+                <h1>Spotitools</h1>
+              </Link>
+              <TopTracksExport />
             </Route>
             <Route path="/recently-added">
               <Link to="/">

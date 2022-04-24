@@ -34,6 +34,8 @@ export const HomeView = ({ isLoggedIn }: IHomeViewProps) => {
           <p>Check which of your playlists contain a specific song.</p>
           <Link to="/queue-playlists">Queue Playlists</Link>
           <p>Create a queue made up of multiple playlists.</p>
+          <Link to="/top-songs-export">Top Songs Export</Link>
+          <p>Subscribe to have your monthly top songs exported as a playlist.</p>
           <Link to="/recently-added">Recently Added</Link>
           <p>View a list of the latest songs added to playlists or liked songs.</p>
           {/* <Link to="/combine-playlists">
