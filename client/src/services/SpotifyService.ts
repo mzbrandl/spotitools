@@ -1,5 +1,5 @@
 import Spotify from "spotify-web-api-js";
-import ISpotifyService from "./ISpotifyService";
+import ISpotifyService, { TrackWithPlaylistName } from "./ISpotifyService";
 
 export default class SpotifyService implements ISpotifyService {
   private spotifyApi!: Spotify.SpotifyWebApiJs;
@@ -30,7 +30,7 @@ export default class SpotifyService implements ISpotifyService {
         ? res.items
         : [...res.items, ...(await getPlaylistsRecursive(offset + 50))];
     };
-    return await getPlaylistsRecursive(0);
+    return getPlaylistsRecursive(0);
   }
 
   public async queuePlaylists(
@@ -75,11 +75,9 @@ export default class SpotifyService implements ISpotifyService {
       })
     );
 
-    const filteredPlaylists = playlistsAndTracks
+    return playlistsAndTracks
       .filter((pat) => pat.items.some((item) => item.track.id === track.id))
       .map((pat) => pat.playlist);
-
-    return filteredPlaylists;
   }
 
   public async getPlaylistsAndTracks(): Promise<
@@ -93,7 +91,7 @@ export default class SpotifyService implements ISpotifyService {
         playlist.owner.id === this.userId || playlist.collaborative === true
     );
 
-    return await Promise.all(
+    return Promise.all(
       playlists.map(async (playlist) => {
         return { playlist, items: await this.getPlaylistTracks(playlist) };
       })
@@ -104,11 +102,33 @@ export default class SpotifyService implements ISpotifyService {
     query: string,
     limit?: number
   ): Promise<SpotifyApi.SearchResponse> {
-    return await this.spotifyApi.search(
-      query,
-      ["track"],
-      limit ? { limit } : {}
+    return this.spotifyApi.search(query, ["track"], limit ? { limit } : {});
+  }
+
+  public async getRecentlyAddedTracks(): Promise<TrackWithPlaylistName[]> {
+    const playlists = (await this.getPlaylists()).filter(
+      (playlist) =>
+        playlist.owner.id === this.userId || playlist.collaborative === true
     );
+
+    const playlistTracks = await Promise.all(
+      playlists.map(async (playlist) => {
+        return { playlist, items: await this.getPlaylistTracks(playlist) };
+      })
+    );
+
+    const trackList = playlistTracks.reduce((acc, item) => {
+      const is = item.items.map((i) => ({
+        ...i,
+        playlistName: item.playlist.name,
+      }));
+      acc = [...acc, ...is];
+      return acc;
+    }, <TrackWithPlaylistName[]>[]);
+
+    return trackList.sort((a, b) => {
+      return new Date(b.added_at).getTime() - new Date(a.added_at).getTime();
+    });
   }
 
   /**
@@ -131,7 +151,7 @@ export default class SpotifyService implements ISpotifyService {
 
   /**
    * Returns the track items of the given playlist.
-   * This function gets called frequently, so it contains some meassures to handle API rate-limiting
+   * This function gets called frequently, so it contains some measures to handle API rate-limiting
    * @param playlist the playlist for which to get the corresponding items
    */
   private async getPlaylistTracks(
@@ -198,7 +218,7 @@ export default class SpotifyService implements ISpotifyService {
   };
 
   public async getCurrentPlayback(): Promise<SpotifyApi.CurrentPlaybackResponse> {
-    return await this.spotifyApi.getMyCurrentPlaybackState();
+    return this.spotifyApi.getMyCurrentPlaybackState();
   }
 }
 

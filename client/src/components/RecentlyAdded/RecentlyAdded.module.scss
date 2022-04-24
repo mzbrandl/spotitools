@@ -1,0 +1,68 @@
+.recentlyAdded {
+  display: flex;
+  flex-direction: column;
+  max-width: 800px;
+  margin: 0 auto;
+  width: calc(100vw - (100vw - 100%));
+
+  input {
+    color: black;
+  }
+
+  .loadingPlaylists {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    margin-top: 2em;
+
+    text {
+      margin-top: 0.5em;
+      color: #b3b3b3;
+    }
+  }
+
+  > p {
+    align-self: center;
+    margin-bottom: 1em;
+    margin-left: 1em;
+    margin-right: 1em;
+  }
+
+  > h3 {
+    text-align: left;
+    margin: 1em;
+  }
+
+  .controls {
+    display: flex;
+    flex-direction: row;
+    margin: 0.5em 1em;
+    justify-content: space-between;
+
+    .filter {
+      color: #b3b3b3;
+      background-color: #282828;
+      border-style: none;
+      height: 2em;
+      padding: 0.2em 1em;
+      border-radius: 5px;
+      font-size: 12pt;
+      font-weight: 600;
+      width: -webkit-fill-available;
+      width: -moz-available;
+      margin-right: 1em;
+    }
+
+    .button {
+      color: #b3b3b3;
+      background-color: #282828;
+      border-style: none;
+      height: 2em;
+      padding: 0.2em 1em;
+      border-radius: 5px;
+      font-size: 12pt;
+      font-weight: 600;
+    }
+  }
+}
