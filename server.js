@@ -229,7 +229,7 @@ app.put("/subscribe_monthly_export", function (req, res) {
     users.push(req.cookies["refreshToken"])
     fs.writeFileSync(MONTHLY_TOP_SONGS_USERS_FILE, JSON.stringify(users));
   }
-  res.send()
+  res.end()
 })
 
 app.put("/unsubscribe_monthly_export", function (req, res) {
@@ -240,7 +240,7 @@ app.put("/unsubscribe_monthly_export", function (req, res) {
     users = users.filter(item => item !== req.cookies["refreshToken"])
     fs.writeFileSync(MONTHLY_TOP_SONGS_USERS_FILE, JSON.stringify(users));
   }
-  res.send()
+  res.end()
 })
 
 app.get("/monthly_export", function (req, res) {
@@ -248,10 +248,10 @@ app.get("/monthly_export", function (req, res) {
     let rawdata = fs.readFileSync(MONTHLY_TOP_SONGS_USERS_FILE);
     let users = JSON.parse(rawdata);
     if (users.includes(req.cookies["refreshToken"])) {
-      res.send(true)
+      res.send({ result: true })
     }
   }
-  res.send(false)
+  res.send({ result: false })
 })
 
 app.use("*", express.static(__dirname + "/client/build"));
