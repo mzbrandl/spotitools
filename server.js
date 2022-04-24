@@ -56,8 +56,10 @@ const monthlyTopSongsJob = schedule.scheduleJob('0 0 1 * *', function () {
     const rawdata = fs.readFileSync(MONTHLY_TOP_SONGS_USERS_FILE);
     const users = JSON.parse(rawdata);
     const formatter = new Intl.DateTimeFormat('en', { month: 'long' });
+    const yearFormatter = new Intl.DateTimeFormat('en', { year: 'numeric' });
     let monthString = formatter.format(new Date().setMonth(new Date().getMonth() - 1));
-    for (var refreshToken of users) {
+    let yearString = yearFormatter.format(new Date());
+    for (var user of users) {
       var authOptions = {
         url: "https://accounts.spotify.com/api/token",
         headers: {
@@ -67,19 +69,19 @@ const monthlyTopSongsJob = schedule.scheduleJob('0 0 1 * *', function () {
         },
         form: {
           grant_type: "refresh_token",
-          refresh_token: refreshToken,
+          refresh_token: user.refreshToken,
         },
         json: true,
       };
       request.post(authOptions, function (error, response, body) {
         if (!error && response.statusCode === 200) {
           var accessToken = body.access_token;
-          spotifyApi.setRefreshToken(refreshToken);
+          spotifyApi.setRefreshToken(user.refreshToken);
           spotifyApi.setAccessToken(accessToken);
           spotifyApi.getMyTopTracks({ limit: 50, offset: 0, time_range: "short_term" }).then(
             data => {
               var topTracks = data.body.items;
-              spotifyApi.createPlaylist(`Your Top Songs ${monthString} 2022`, { description: "Created by spotitools.com " + new Date().getMinutes().toString() }).then(
+              spotifyApi.createPlaylist(`Your Top Songs ${monthString} ${yearString}`, { description: "Generated with spotitools.com" }).then(
                 playlistRes => spotifyApi.addTracksToPlaylist(playlistRes.body.id, topTracks.map(track => track.uri)))
             },
             err => console.log(err))
@@ -171,16 +173,16 @@ app.get("/callback", function (req, res) {
 
         // use the access token to access the Spotify Web API
         request.get(options, function (error, response, body) {
-          console.log(body);
-        });
 
-        res.cookie("accessToken", access_token);
-        res.cookie("refreshToken", refresh_token, {
-          expires: new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000),
-        });
+          res.cookie("userId", body.id)
+          res.cookie("accessToken", access_token);
+          res.cookie("refreshToken", refresh_token, {
+            expires: new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000),
+          });
 
-        // we can also pass the token to the browser to make requests from there
-        res.redirect("/");
+          // we can also pass the token to the browser to make requests from there
+          res.redirect("/");
+        });
       } else {
         res.redirect(
           "/#" +
@@ -225,8 +227,11 @@ app.put("/subscribe_monthly_export", function (req, res) {
     let rawdata = fs.readFileSync(MONTHLY_TOP_SONGS_USERS_FILE);
     users = JSON.parse(rawdata);
   }
-  if (!users.includes(req.cookies["refreshToken"])) {
-    users.push(req.cookies["refreshToken"])
+  if (!users.includes(item => item.refreshToken === req.cookies["refreshToken"])) {
+    users.push({
+      "userId": req.cookies["userId"],
+      "refreshToken": req.cookies["refreshToken"]
+    })
     fs.writeFileSync(MONTHLY_TOP_SONGS_USERS_FILE, JSON.stringify(users));
   }
   res.end()
@@ -237,7 +242,7 @@ app.put("/unsubscribe_monthly_export", function (req, res) {
   if (fs.existsSync(MONTHLY_TOP_SONGS_USERS_FILE)) {
     let rawdata = fs.readFileSync(MONTHLY_TOP_SONGS_USERS_FILE);
     users = JSON.parse(rawdata);
-    users = users.filter(item => item !== req.cookies["refreshToken"])
+    users = users.filter(item => item.userId !== req.cookies["userId"])
     fs.writeFileSync(MONTHLY_TOP_SONGS_USERS_FILE, JSON.stringify(users));
   }
   res.end()
@@ -247,7 +252,7 @@ app.get("/monthly_export", function (req, res) {
   if (fs.existsSync(MONTHLY_TOP_SONGS_USERS_FILE)) {
     let rawdata = fs.readFileSync(MONTHLY_TOP_SONGS_USERS_FILE);
     let users = JSON.parse(rawdata);
-    if (users.includes(req.cookies["refreshToken"])) {
+    if (users.includes(item => item.userId === req.cookies["userId"])) {
       res.send({ result: true })
     }
   }
