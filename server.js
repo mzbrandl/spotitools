@@ -228,7 +228,7 @@ app.put("/subscribe_monthly_export", function (req, res) {
     let rawdata = fs.readFileSync(MONTHLY_TOP_SONGS_USERS_FILE);
     users = JSON.parse(rawdata);
   }
-  if (!users.includes(item => item.userId === req.cookies["userId"])) {
+  if (!users.some(item => item.userId === req.cookies["userId"])) {
     users.push({
       "userId": req.cookies["userId"],
       "refreshToken": req.cookies["refreshToken"]
@@ -254,7 +254,7 @@ app.get("/monthly_export", function (req, res) {
   if (fs.existsSync(MONTHLY_TOP_SONGS_USERS_FILE)) {
     let rawdata = fs.readFileSync(MONTHLY_TOP_SONGS_USERS_FILE);
     let users = JSON.parse(rawdata);
-    if (users.includes(item => item.userId === req.cookies["userId"])) {
+    if (users.some(item => item.userId === req.cookies["userId"])) {
       res.send({ result: true })
     }
   }
