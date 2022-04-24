@@ -41,7 +41,7 @@ export const TopTracksExport = () => {
   const onSwitchClick = () => {
     setIsSwitchDisabled(true);
     if (isSubscribed) {
-      fetch("unsubscribe_monthly_export", {
+      fetch("/unsubscribe_monthly_export", {
         method: "put",
         headers: { 'Content-Type': 'application/json' },
       }).then(res => {
@@ -49,7 +49,7 @@ export const TopTracksExport = () => {
         setIsSwitchDisabled(false)
       })
     } else {
-      fetch("subscribe_monthly_export", {
+      fetch("/subscribe_monthly_export", {
         method: "put",
         headers: { 'Content-Type': 'application/json' },
       }).then(res => {
