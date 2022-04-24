@@ -33,7 +33,7 @@ export const TopTracksExport = () => {
   useEffect(() => {
     setIsLoading(true);
     fetch("/monthly_export").then(res => res.json().then(value => {
-      setIsSubscribed(value);
+      setIsSubscribed(value.result);
       setIsLoading(false);
     }))
   }, [])
