@@ -250,6 +250,7 @@ app.put("/unsubscribe_monthly_export", function (req, res) {
 })
 
 app.get("/monthly_export", function (req, res) {
+  res.setHeader("Cache-Control", "no-cache");
   if (fs.existsSync(MONTHLY_TOP_SONGS_USERS_FILE)) {
     let rawdata = fs.readFileSync(MONTHLY_TOP_SONGS_USERS_FILE);
     let users = JSON.parse(rawdata);
