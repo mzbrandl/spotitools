@@ -96,7 +96,8 @@ var app = express();
 app
   .use(express.static(__dirname + "/client/build"))
   .use(cors())
-  .use(cookieParser());
+  .use(cookieParser())
+  .set('etag', false);
 
 app.get("/login", function (req, res) {
   var state = generateRandomString(16);
@@ -227,7 +228,7 @@ app.put("/subscribe_monthly_export", function (req, res) {
     let rawdata = fs.readFileSync(MONTHLY_TOP_SONGS_USERS_FILE);
     users = JSON.parse(rawdata);
   }
-  if (!users.includes(item => item.refreshToken === req.cookies["refreshToken"])) {
+  if (!users.includes(item => item.userId === req.cookies["userId"])) {
     users.push({
       "userId": req.cookies["userId"],
       "refreshToken": req.cookies["refreshToken"]
