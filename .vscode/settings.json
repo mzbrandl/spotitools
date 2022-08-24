@@ -1,4 +1,7 @@
 {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "html.format.wrapLineLength": 220
+    "html.format.wrapLineLength": 220,
+    "cSpell.words": [
+        "Spotitools"
+    ]
 }

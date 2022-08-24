@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <title>Example of the Authorization Code flow with Spotify</title>
     <link
@@ -8,7 +8,7 @@
     />
     <style type="text/css">
       #login,
-      #loggedin {
+      #loggedIn {
         display: none;
       }
       .text-overflow {
@@ -26,7 +26,7 @@
         <h1>This is an example of the Authorization Code flow</h1>
         <a href="/login" class="btn btn-primary">Log in with Spotify</a>
       </div>
-      <div id="loggedin">
+      <div id="loggedIn">
         <div id="user-profile"></div>
         <div id="oauth"></div>
         <button class="btn btn-default" id="obtain-new-token">
@@ -180,13 +180,13 @@
                 );
 
                 $("#login").hide();
-                $("#loggedin").show();
+                $("#loggedIn").show();
               },
             });
           } else {
             // render initial screen
             $("#login").show();
-            $("#loggedin").hide();
+            $("#loggedIn").hide();
           }
 
           document.getElementById("obtain-new-token").addEventListener(

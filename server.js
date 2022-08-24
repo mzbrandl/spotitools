@@ -7,24 +7,24 @@
  * https://developer.spotify.com/web-api/authorization-guide/#authorization_code_flow
  */
 
-var express = require("express"); // Express web server framework
-var request = require("request"); // "Request" library
-var cors = require("cors");
-var querystring = require("querystring");
-var cookieParser = require("cookie-parser");
-var SpotifyWebApi = require('spotify-web-api-node');
-var fs = require('fs');
+const express = require("express"); // Express web server framework
+const request = require("request"); // "Request" library
+const cors = require("cors");
+const querystring = require("querystring");
+const cookieParser = require("cookie-parser");
+const SpotifyWebApi = require('spotify-web-api-node');
+const fs = require('fs');
 const schedule = require('node-schedule');
 
-var client_id = "a1b90597cc8449c89089422a31b8bfa1"; // Your client id
-var client_secret = require("./client_secret.json"); // Your secret
-var redirect_uri = "https://www.spotitools.com/callback/"; // Your redirect uri
+const client_id = "a1b90597cc8449c89089422a31b8bfa1"; // Your client id
+const client_secret = require("./client_secret.json"); // Your secret
+const redirect_uri = "https://www.spotitools.com/callback/"; // Your redirect uri
 
 const PORT = process.env.PORT || 8080;
 
 const MONTHLY_TOP_SONGS_USERS_FILE = "./monthlyExportUsers.json";
 
-var spotifyApi = new SpotifyWebApi({
+const spotifyApi = new SpotifyWebApi({
   clientId: client_id,
   clientSecret: client_secret,
   redirectUri: redirect_uri
@@ -35,32 +35,32 @@ var spotifyApi = new SpotifyWebApi({
  * @param  {number} length The length of the string
  * @return {string} The generated string
  */
-var generateRandomString = function (length) {
-  var text = "";
-  var possible =
+const generateRandomString = function (length) {
+  let text = "";
+  const possible =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-  for (var i = 0; i < length; i++) {
+  for (let i = 0; i < length; i++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
   return text;
 };
 
-var stateKey = "spotify_auth_state";
+const stateKey = "spotify_auth_state";
 
 /**
  * At the start of the month generate a playlist of users top songs from the previous month.
  */
 const monthlyTopSongsJob = schedule.scheduleJob('0 0 1 * *', function () {
   if (fs.existsSync(MONTHLY_TOP_SONGS_USERS_FILE)) {
-    const rawdata = fs.readFileSync(MONTHLY_TOP_SONGS_USERS_FILE);
-    const users = JSON.parse(rawdata);
+    const rawData = fs.readFileSync(MONTHLY_TOP_SONGS_USERS_FILE);
+    const users = JSON.parse(rawData);
     const formatter = new Intl.DateTimeFormat('en', { month: 'long' });
     const yearFormatter = new Intl.DateTimeFormat('en', { year: 'numeric' });
     let monthString = formatter.format(new Date().setMonth(new Date().getMonth() - 1));
     let yearString = yearFormatter.format(new Date());
-    for (var user of users) {
-      var authOptions = {
+    for (const user of users) {
+      const authOptions = {
         url: "https://accounts.spotify.com/api/token",
         headers: {
           Authorization:
@@ -75,12 +75,14 @@ const monthlyTopSongsJob = schedule.scheduleJob('0 0 1 * *', function () {
       };
       request.post(authOptions, function (error, response, body) {
         if (!error && response.statusCode === 200) {
-          var accessToken = body.access_token;
+          const accessToken = body.access_token;
+          spotifyApi.resetRefreshToken();
+          spotifyApi.resetAccessToken();
           spotifyApi.setRefreshToken(user.refreshToken);
           spotifyApi.setAccessToken(accessToken);
           spotifyApi.getMyTopTracks({ limit: 50, offset: 0, time_range: "short_term" }).then(
             data => {
-              var topTracks = data.body.items;
+              const topTracks = data.body.items;
               spotifyApi.createPlaylist(`Your Top Songs ${monthString} ${yearString}`, { description: "Generated with spotitools.com" }).then(
                 playlistRes => spotifyApi.addTracksToPlaylist(playlistRes.body.id, topTracks.map(track => track.uri)))
             },
@@ -91,7 +93,7 @@ const monthlyTopSongsJob = schedule.scheduleJob('0 0 1 * *', function () {
   }
 });
 
-var app = express();
+const app = express();
 
 app
   .use(express.static(__dirname + "/client/build"))
@@ -99,12 +101,12 @@ app
   .use(cookieParser())
   .set('etag', false);
 
-app.get("/login", function (req, res) {
-  var state = generateRandomString(16);
+app.get("/login", function (_req, res) {
+  const state = generateRandomString(16);
   res.cookie(stateKey, state);
 
   // your application requests authorization
-  var scope = [
+  const scope = [
     "user-read-private",
     "user-read-email",
     "playlist-read-private",
@@ -133,9 +135,9 @@ app.get("/callback", function (req, res) {
   // your application requests refresh and access tokens
   // after checking the state parameter
 
-  var code = req.query.code || null;
-  var state = req.query.state || null;
-  var storedState = req.cookies ? req.cookies[stateKey] : null;
+  const code = req.query.code || null;
+  const state = req.query.state || null;
+  const storedState = req.cookies ? req.cookies[stateKey] : null;
 
   if (state === null || state !== storedState) {
     res.redirect(
@@ -146,7 +148,7 @@ app.get("/callback", function (req, res) {
     );
   } else {
     res.clearCookie(stateKey);
-    var authOptions = {
+    const authOptions = {
       url: "https://accounts.spotify.com/api/token",
       form: {
         code: code,
@@ -163,17 +165,17 @@ app.get("/callback", function (req, res) {
 
     request.post(authOptions, function (error, response, body) {
       if (!error && response.statusCode === 200) {
-        var access_token = body.access_token,
+        const access_token = body.access_token,
           refresh_token = body.refresh_token;
 
-        var options = {
+        const options = {
           url: "https://api.spotify.com/v1/me",
           headers: { Authorization: "Bearer " + access_token },
           json: true,
         };
 
         // use the access token to access the Spotify Web API
-        request.get(options, function (error, response, body) {
+        request.get(options, function (_error, _response, body) {
 
           res.cookie("userId", body.id)
           res.cookie("accessToken", access_token);
@@ -198,8 +200,8 @@ app.get("/callback", function (req, res) {
 
 app.get("/refresh_token", function (req, res) {
   // requesting access token from refresh token
-  var refresh_token = req.cookies["refreshToken"];
-  var authOptions = {
+  const refresh_token = req.cookies["refreshToken"];
+  const authOptions = {
     url: "https://accounts.spotify.com/api/token",
     headers: {
       Authorization:
@@ -215,7 +217,7 @@ app.get("/refresh_token", function (req, res) {
 
   request.post(authOptions, function (error, response, body) {
     if (!error && response.statusCode === 200) {
-      var access_token = body.access_token;
+      const access_token = body.access_token;
       res.cookie("accessToken", access_token);
       res.redirect("/");
     }
@@ -225,8 +227,8 @@ app.get("/refresh_token", function (req, res) {
 app.put("/subscribe_monthly_export", function (req, res) {
   let users = [];
   if (fs.existsSync(MONTHLY_TOP_SONGS_USERS_FILE)) {
-    let rawdata = fs.readFileSync(MONTHLY_TOP_SONGS_USERS_FILE);
-    users = JSON.parse(rawdata);
+    let rawData = fs.readFileSync(MONTHLY_TOP_SONGS_USERS_FILE);
+    users = JSON.parse(rawData);
   }
   if (!users.some(item => item.userId === req.cookies["userId"])) {
     users.push({
@@ -241,8 +243,8 @@ app.put("/subscribe_monthly_export", function (req, res) {
 app.put("/unsubscribe_monthly_export", function (req, res) {
   let users = [];
   if (fs.existsSync(MONTHLY_TOP_SONGS_USERS_FILE)) {
-    let rawdata = fs.readFileSync(MONTHLY_TOP_SONGS_USERS_FILE);
-    users = JSON.parse(rawdata);
+    let rawData = fs.readFileSync(MONTHLY_TOP_SONGS_USERS_FILE);
+    users = JSON.parse(rawData);
     users = users.filter(item => item.userId !== req.cookies["userId"])
     fs.writeFileSync(MONTHLY_TOP_SONGS_USERS_FILE, JSON.stringify(users));
   }
@@ -252,8 +254,8 @@ app.put("/unsubscribe_monthly_export", function (req, res) {
 app.get("/monthly_export", function (req, res) {
   res.setHeader("Cache-Control", "no-cache");
   if (fs.existsSync(MONTHLY_TOP_SONGS_USERS_FILE)) {
-    let rawdata = fs.readFileSync(MONTHLY_TOP_SONGS_USERS_FILE);
-    let users = JSON.parse(rawdata);
+    let rawData = fs.readFileSync(MONTHLY_TOP_SONGS_USERS_FILE);
+    let users = JSON.parse(rawData);
     if (users.some(item => item.userId === req.cookies["userId"])) {
       res.send({ result: true })
     }
