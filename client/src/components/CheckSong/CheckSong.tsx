@@ -103,7 +103,17 @@ export const CheckSong = () => {
             <h3>Found in following playlists:</h3>
             {playlistsAndTracks
               .filter((p) =>
-                p.items.map((i) => i.track).some((t) => t.id === track.id)
+                p.items.map((i) => i.track as SpotifyApi.TrackObjectFull).some((t) => {
+                  // Check for same id
+                  if (t.id === track?.id) {
+                    return true
+                  }
+                  // Check for name/artist match
+                  if (`${t.name}:${t.artists[0].name}`.toLowerCase() === `${track.name}:${track.artists[0].name}`.toLowerCase()) {
+                    return true
+                  }
+                  return false
+                })
               )
               .map((pt, i) => (
                 <ListResult
@@ -111,11 +121,11 @@ export const CheckSong = () => {
                   id={pt.playlist.id}
                   title={pt.playlist.name}
                   secondaryText={`added on ${new Date(
-                    pt.items.find((i) => i.track.id === track.id)
+                    pt.items.find((i) => i.track.id === track.id || `${i.track.name}:${(i.track as SpotifyApi.TrackObjectFull).artists[0].name}`.toLowerCase() === `${track.name}:${track.artists[0].name}`.toLowerCase())
                       ?.added_at as string
                   ).toLocaleDateString()}`}
                   cover={pt.playlist.images[0]}
-                  handelClick={() => window.location.href =pt.playlist.external_urls.spotify}
+                  handelClick={() => window.location.href = pt.playlist.external_urls.spotify}
                 />
               ))}
           </>
