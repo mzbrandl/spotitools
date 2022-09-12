@@ -38,6 +38,8 @@ export const HomeView = ({ isLoggedIn }: IHomeViewProps) => {
           <p>Subscribe to have your monthly top songs exported as a playlist.</p>
           <Link to="/recently-added">Recently Added</Link>
           <p>View a list of the latest songs added to playlists or liked songs.</p>
+          <Link to="/like-catalog">Like Catalog</Link>
+          <p>Your liked songs, you haven't added to any playlist.</p>
           {/* <Link to="/combine-playlists">
             Combine multiple playlists to a new playlist which updates itself
           </Link> */}

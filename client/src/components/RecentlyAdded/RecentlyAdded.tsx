@@ -1,66 +1,102 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useMemo } from "react";
 import { ClipLoader } from "react-spinners";
 import { css } from "@emotion/core";
 
-import { SpotifyServiceContext } from "../../App";
+import { playlistsAndTracksAtom, SpotifyServiceContext } from "../../App";
 import { ListResult } from "../ListResult/ListResult";
 
 import styles from "./RecentlyAdded.module.scss";
 import { TrackWithPlaylistName } from "../../services/ISpotifyService";
+import { useAtom } from "jotai";
+import { useVirtualizer } from "@tanstack/react-virtual";
 
 export const RecentlyAdded = () => {
   const spotifyService = useContext(SpotifyServiceContext);
-  const [loading, setLoading] = useState(true);
-  const [playlistsAndTracks, setPlaylistsAndTracks] = useState<
-    TrackWithPlaylistName[]
-  >([]);
+  const [playlistsAndTracks] = useAtom(playlistsAndTracksAtom)
+  const parentRef = React.useRef(null)
+  const paragraphRef = React.useRef<HTMLParagraphElement>(null)
+  const [listHeight, setListHeight] = useState(200)
+
+  const recentlyAddedTracks = useMemo<TrackWithPlaylistName[] | undefined>(() => {
+    const trackList = playlistsAndTracks?.reduce<TrackWithPlaylistName[]>((acc, item) => {
+      const is = item.items.map((i) => ({
+        ...i,
+        playlistName: item.playlist.name,
+      }));
+      acc = [...acc, ...is];
+      return acc;
+    }, []);
+
+    return trackList?.sort((a, b) => {
+      return new Date(b.added_at).getTime() - new Date(a.added_at).getTime();
+    });
+  }, [playlistsAndTracks])
+
+  const rowVirtualizer = useVirtualizer({
+    count: recentlyAddedTracks ? recentlyAddedTracks.length : 0,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 100,
+  })
 
   useEffect(() => {
-    setLoading(true);
-    spotifyService?.getRecentlyAddedTracks().then((res) => {
-      setPlaylistsAndTracks(res);
-      setLoading(false);
-    });
-  }, [spotifyService]);
+    check()
+  }, [paragraphRef])
 
-  console.log(playlistsAndTracks);
+  const check = () => {
+    if (!!paragraphRef.current) {
+      let { bottom } = paragraphRef.current.getBoundingClientRect()
+      setListHeight(window.innerHeight - bottom - 20)
+    }
+  }
 
   return (
     <div className={styles.recentlyAdded}>
-      <p>
-        Here is a chronological list of songs you recently added to a playlist
-        or to your liked songs.
+      <p ref={paragraphRef}>
+        Here is a chronological list of songs you recently added to a playlist.
       </p>
-      {loading && (
-        <div className={styles.loadingPlaylists}>
-          <ClipLoader
-            css={css`
-              align-self: center;
-            `}
-            size={30}
-            color={"#1db954"}
-            loading={true}
-          />
-          <span>Loading...</span>
+      {recentlyAddedTracks && <div
+        ref={parentRef}
+        style={{
+          height: listHeight,
+          overflow: 'auto', // Make it scroll!
+        }}
+      >
+        <div
+          style={{
+            height: `${rowVirtualizer.getTotalSize()}px`,
+            width: '100%',
+            position: 'relative',
+          }}
+        >
+          {rowVirtualizer.getVirtualItems().map((virtualItem) => {
+            const track = recentlyAddedTracks[virtualItem.index].track as SpotifyApi.TrackObjectFull
+            return (
+              <div
+                key={virtualItem.key}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  transform: `translateY(${virtualItem.start}px)`,
+                }}
+              >
+                <ListResult
+                  key={track.id + virtualItem.index}
+                  id={track.id}
+                  title={track.name}
+                  secondaryText={`by ${track.artists
+                    .map((a) => a.name)
+                    .toString()}`}
+                  tertiaryText={`in ${recentlyAddedTracks[virtualItem.index].playlistName}, ${Math.floor((Date.now() - Date.parse(recentlyAddedTracks[virtualItem.index].added_at)) / 86400000)} days ago`}
+                  handleClick={() => spotifyService?.playTrack(track)}
+                  cover={track.album.images[0]}
+                />
+              </div>
+            )
+          })}
         </div>
-      )}
-      {playlistsAndTracks?.length > 0 &&
-        playlistsAndTracks?.map((item, index) => (
-          <ListResult
-            key={item.track.id + index}
-            id={item.track.id}
-            title={item.track.name}
-            secondaryText={`by ${(
-              item.track as SpotifyApi.TrackObjectFull
-            ).artists
-              .map((a) => a.name)
-              .toString()}`}
-            tertiaryText={`in ${item.playlistName}, ${Math.floor((Date.now() - Date.parse(item.added_at)) / 86400000)} days ago`}
-            cover={(item.track as SpotifyApi.TrackObjectFull).album.images[0]}
-            // isChecked={true}
-            // handelClick={() => setTrack(undefined)}
-          />
-        ))}
+      </div>}
     </div>
   );
 };

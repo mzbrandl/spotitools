@@ -6,18 +6,32 @@ import { CheckSong } from "./components/CheckSong/CheckSong";
 import SpotifyService from "./services/SpotifyService";
 
 import "./App.css";
-import ISpotifyService from "./services/ISpotifyService";
+import ISpotifyService, { PlaylistAndTracks } from "./services/ISpotifyService";
 import { PlaylistCombiner } from "./components/PlaylistCombiner/PlaylistCombiner";
 import { RecentlyAdded } from "./components/RecentlyAdded/RecentlyAdded";
 import { TopTracksExport } from "./components/TopTracksExport/TopTracksExport";
+import { atom, useAtom } from "jotai";
+import ClipLoader from "react-spinners/ClipLoader";
+import { css } from "@emotion/react";
+import { LikeCatalog } from "./components/LikeCatalog/LikeCatalog";
 
 export const SpotifyServiceContext = React.createContext(
   {} as ISpotifyService | undefined
 );
 
+export const playlistsAndTracksAtom = atom<PlaylistAndTracks[] | null>(null);
+export const playlistsAtom = atom<SpotifyApi.PlaylistObjectSimplified[] | null>(null);
+export const likedTracksAtom = atom<SpotifyApi.PlaylistTrackObject[] | null>(null);
+export const likedTracksFilteredAtom = atom<SpotifyApi.PlaylistTrackObject[] | null>(null);
+
+
 export const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [spotifyService, setSpotifyService] = useState<ISpotifyService>();
+  const [playlistsAndTracks, setPlaylistsAndTracks] = useAtom(playlistsAndTracksAtom);
+  const [playlists, setplaylists] = useAtom(playlistsAtom);
+  const [likedTracks, setLikedTracks] = useAtom(likedTracksAtom);
+  const [loadingUserData, setLoadingUserData] = useState(false);
 
   useEffect(() => {
     const cookies = Object.assign(
@@ -33,11 +47,32 @@ export const App = () => {
       fetch("/refresh_token");
     }
 
-    SpotifyService.create(cookies["accessToken"]).then((res) =>
-      setSpotifyService(res)
+    SpotifyService.create(cookies["accessToken"]).then(
+      (res) =>
+        setSpotifyService(res),
+      (error) => {
+        setIsLoggedIn(false);
+        return;
+      }
     );
+
     cookies["refreshToken"] && cookies["accessToken"] && setIsLoggedIn(true);
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      if (isLoggedIn && !!spotifyService) {
+        setLoadingUserData(true)
+        const playlistTracks = await spotifyService?.getPlaylistsAndTracks();
+        setPlaylistsAndTracks(playlistTracks);
+        const likedTracks = await spotifyService?.getLikedTracks();
+        setLikedTracks(likedTracks);
+        const playlists = await spotifyService.getPlaylists();
+        setplaylists(playlists);
+        setLoadingUserData(false);
+      }
+    })();
+  }, [isLoggedIn, spotifyService]);
 
   return (
     <SpotifyServiceContext.Provider value={spotifyService}>
@@ -68,6 +103,12 @@ export const App = () => {
               </Link>
               <RecentlyAdded />
             </Route>
+            <Route path="/like-catalog">
+              <Link to="/">
+                <h1>Spotitools</h1>
+              </Link>
+              <LikeCatalog />
+            </Route>
             {/* <Route path="/combine-playlists">
               <p>Playlist combiner under construction...</p>
             </Route> */}
@@ -76,6 +117,21 @@ export const App = () => {
             </Route>
           </Switch>
         </BrowserRouter>
+        {loadingUserData && <div className="LoadingWrapper">
+          <div className="LoadingUserDataIndicator">
+            <ClipLoader
+              css={css`
+              align-self: center;
+            `}
+              size={16}
+              color={"#1db954"}
+              loading={true}
+            />
+            <span>
+              Loading user data...
+            </span>
+          </div>
+        </div>}
       </div>
     </SpotifyServiceContext.Provider>
   );

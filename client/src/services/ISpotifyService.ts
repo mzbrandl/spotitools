@@ -1,4 +1,6 @@
 export default interface ISpotifyService {
+  userId: string;
+
   /**
    * Returns all playlist which the current user is following.
    */
@@ -25,12 +27,7 @@ export default interface ISpotifyService {
   /**
    * Returns the Playlists with corresponding tracks of the current user.
    */
-  getPlaylistsAndTracks(): Promise<
-    {
-      playlist: SpotifyApi.PlaylistObjectSimplified;
-      items: SpotifyApi.PlaylistTrackObject[];
-    }[]
-  >;
+  getPlaylistsAndTracks(): Promise<PlaylistAndTracks[]>;
 
   /**
    * Returns the last played track uf the current user or null.
@@ -50,8 +47,17 @@ export default interface ISpotifyService {
   getCurrentPlayback(): Promise<SpotifyApi.CurrentPlaybackResponse>;
 
   getRecentlyAddedTracks(): Promise<TrackWithPlaylistName[]>;
+
+  getLikedTracks(): Promise<SpotifyApi.PlaylistTrackObject[]>;
+  playTrack(track: SpotifyApi.TrackObjectFull): void;
+  addToPlaylist(playlistId: string, trackUri: string): Promise<void>;
 }
 
 export interface TrackWithPlaylistName extends SpotifyApi.PlaylistTrackObject {
   playlistName: string;
+}
+
+export interface PlaylistAndTracks {
+  playlist: SpotifyApi.PlaylistObjectSimplified;
+  items: SpotifyApi.PlaylistTrackObject[];
 }

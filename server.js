@@ -18,7 +18,7 @@ const schedule = require('node-schedule');
 
 const client_id = "a1b90597cc8449c89089422a31b8bfa1"; // Your client id
 const client_secret = require("./client_secret.json"); // Your secret
-const redirect_uri = "http://localhost:8080/callback/"; // Your redirect uri
+const redirect_uri = "https://www.spotitools.com/callback/"; // Your redirect uri
 
 const PORT = process.env.PORT || 8080;
 
@@ -117,6 +117,7 @@ app.get("/login", function (_req, res) {
     "user-read-playback-state",
     "user-modify-playback-state",
     "user-top-read",
+    "user-library-read"
   ].reduce((scope, item) => (scope += `${item} `), "");
 
   res.redirect(

@@ -9,23 +9,25 @@ export interface IListResultProps {
   secondaryText?: string;
   tertiaryText?: string;
   isChecked?: boolean;
-  handelClick?(id: string, isChecked: boolean): void;
+  handleClick?(id: string, isChecked: boolean): void;
+  children?: React.ReactNode;
 }
 
-export const ListResult = ({
+export const ListResult: React.FC<IListResultProps> = ({
   id,
   title,
   secondaryText,
   tertiaryText,
   cover,
   isChecked,
-  handelClick,
+  handleClick,
+  children
 }: IListResultProps) => {
   return (
     <div
       className={styles.listResult}
-      onClick={(_e) => handelClick && handelClick(id, !isChecked)}
-    >
+      style={handleClick && { cursor: "pointer" }}
+      onClick={(_e) => handleClick && handleClick(id, !isChecked)}>
       <div className={styles.overlay}>
         <img
           className={styles.cover}
@@ -47,6 +49,7 @@ export const ListResult = ({
             </div>
           )}
         </div>
+        {children}
         {isChecked && (
           <img
             className={styles.checkImg}
@@ -60,3 +63,6 @@ export const ListResult = ({
     </div>
   );
 };
+
+
+

@@ -1,11 +1,12 @@
-import React, { useState, useContext, useEffect } from "react";
-import { ClipLoader } from "react-spinners";
-import { css } from "@emotion/core";
+import React, { useState, useContext, useEffect, useMemo } from "react";
 
-import { SpotifyServiceContext } from "../../App";
+import { playlistsAndTracksAtom, SpotifyServiceContext } from "../../App";
 import { ListResult } from "../ListResult/ListResult";
 
 import styles from "./CheckSong.module.scss";
+import { useAtom } from "jotai";
+import SpotifyService from "../../services/SpotifyService";
+import { ReactComponent as Refresh } from '../../assets/refresh.svg';
 
 export const CheckSong = () => {
   const spotifyService = useContext(SpotifyServiceContext);
@@ -14,23 +15,10 @@ export const CheckSong = () => {
     SpotifyApi.TrackObjectFull[] | undefined | null
   >(undefined);
   const [track, setTrack] = useState<SpotifyApi.TrackObjectFull>();
-  const [playlistsAndTracks, setPlaylistsAndTracks] = useState<
-    {
-      playlist: SpotifyApi.PlaylistObjectSimplified;
-      items: SpotifyApi.PlaylistTrackObject[];
-    }[]
-  >();
+  const [playlistsAndTracks] = useAtom(playlistsAndTracksAtom)
 
   useEffect(() => {
-    spotifyService?.getCurrentPlayback().then((res) => {
-      res.item?.name && setTrack(res.item);
-    });
-  }, [spotifyService]);
-
-  useEffect(() => {
-    spotifyService?.getPlaylistsAndTracks().then((res) => {
-      setPlaylistsAndTracks(res);
-    });
+    setCurrentPlayback();
   }, [spotifyService]);
 
   const onSearch = async () => {
@@ -43,6 +31,20 @@ export const CheckSong = () => {
       res && setTrack(res);
     }
   };
+
+  const setCurrentPlayback = () => {
+    spotifyService?.getCurrentPlayback().then((res) => {
+      res.item?.name && setTrack(res.item);
+    });
+  }
+
+  const playlistsWithTrack = useMemo(() => {
+    if (!!track) {
+      return playlistsAndTracks?.filter((p) =>
+        p.items.map((i) => i.track as SpotifyApi.TrackObjectFull).some((t) => SpotifyService.isSameTrack(t, track!))
+      )
+    }
+  }, [playlistsAndTracks, track]);
 
   return (
     <div className={styles.checkSong}>
@@ -76,9 +78,13 @@ export const CheckSong = () => {
           title={track.name}
           secondaryText={`by ${track.artists.map((a) => a.name).toString()}`}
           cover={track.album.images[0]}
-          isChecked={true}
-          handelClick={() => setTrack(undefined)}
-        />
+        // handleClick={() => setCurrentPlayback()}
+        >
+          <div style={{ color: "white", display: "flex", alignItems: "center" }}>
+            <Refresh style={{ fill: "white", cursor: "pointer" }}
+              onClick={() => setCurrentPlayback()} />
+          </div>
+        </ListResult>
       )}
 
       {searchResultTracks &&
@@ -90,59 +96,33 @@ export const CheckSong = () => {
             secondaryText={`by ${t.artists.map((a) => a.name).toString()}`}
             cover={t.album.images[0]}
             isChecked={t.id === track?.id}
-            handelClick={() => {
+            handleClick={() => {
               setTrack(t);
               setSearchResultTracks(undefined);
             }}
           />
         ))}
 
-      {playlistsAndTracks ? (
-        track && (
-          <>
-            <h3>Found in following playlists:</h3>
-            {playlistsAndTracks
-              .filter((p) =>
-                p.items.map((i) => i.track as SpotifyApi.TrackObjectFull).some((t) => {
-                  // Check for same id
-                  if (t.id === track?.id) {
-                    return true
-                  }
-                  // Check for name/artist match
-                  if (`${t.name}:${t.artists[0].name}`.toLowerCase() === `${track.name}:${track.artists[0].name}`.toLowerCase()) {
-                    return true
-                  }
-                  return false
-                })
-              )
-              .map((pt, i) => (
-                <ListResult
-                  key={pt.playlist.id}
-                  id={pt.playlist.id}
-                  title={pt.playlist.name}
-                  secondaryText={`added on ${new Date(
-                    pt.items.find((i) => i.track.id === track.id || `${i.track.name}:${(i.track as SpotifyApi.TrackObjectFull).artists[0].name}`.toLowerCase() === `${track.name}:${track.artists[0].name}`.toLowerCase())
-                      ?.added_at as string
-                  ).toLocaleDateString()}`}
-                  cover={pt.playlist.images[0]}
-                  handelClick={() => window.location.href = pt.playlist.external_urls.spotify}
-                />
-              ))}
-          </>
-        )
-      ) : (
-        <div className={styles.loadingPlaylists}>
-          <ClipLoader
-            css={css`
-              align-self: center;
-            `}
-            size={30}
-            color={"#1db954"}
-            loading={true}
-          />
-          <span>Loading playlists...</span>
-        </div>
+      {playlistsAndTracks && !searchResultTracks && track && (
+        <>
+          <h3>{playlistsWithTrack && playlistsWithTrack.length > 0 ? "Found in following playlists:" : "Not found in any playlist"}</h3>
+          {playlistsWithTrack?.map((pt, i) => (
+            <ListResult
+              key={pt.playlist.id}
+              id={pt.playlist.id}
+              title={pt.playlist.name}
+              secondaryText={`added on ${new Date(
+                pt.items.find((i) => i.track.id === track.id || `${i.track.name}:${(i.track as SpotifyApi.TrackObjectFull).artists[0].name}`.toLowerCase() === `${track.name}:${track.artists[0].name}`.toLowerCase())
+                  ?.added_at as string
+              ).toLocaleDateString()}`}
+              cover={pt.playlist.images[0]}
+              handleClick={() => window.location.href = pt.playlist.external_urls.spotify}
+            />
+          ))}
+        </>
       )}
     </div>
   );
 };
+
+

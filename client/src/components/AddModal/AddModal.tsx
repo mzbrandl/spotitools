@@ -1,55 +1,42 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import ClipLoader from "react-spinners/ClipLoader";
 import { css } from "@emotion/core";
 
 import { playlistsAtom, SpotifyServiceContext } from "../../App";
-import * as Play from "../../assets/play.png";
 import { ListResult } from "../ListResult/ListResult";
-
-import styles from "./PlaylistCombiner.module.scss";
+import { ReactComponent as Back } from "../../assets/back.svg";
+import styles from "./AddModal.module.scss";
 import { useAtom } from "jotai";
 
-export const PlaylistCombiner = () => {
+export interface IAddModalProps {
+  trackUri: string;
+  onClose: () => void;
+}
+
+export const AddModal: React.FC<IAddModalProps> = ({ trackUri, onClose }) => {
   const spotifyService = useContext(SpotifyServiceContext);
   const [playlists] = useAtom(playlistsAtom);
-
-  const [selectedPlaylists, setSelectedPlaylists] = useState<
-    SpotifyApi.PlaylistObjectSimplified[]
-  >([]);
   const [filter, setFilter] = useState("");
 
-  const onCreatePlaylistClick = async () => {
-    await spotifyService?.queuePlaylists(selectedPlaylists);
-    clearSelection();
-  };
+  const filteredPlaylists = useMemo(() => {
+    return playlists?.filter(item => item.collaborative || item.owner.id === spotifyService?.userId)
+  }, [playlists])
 
-  const clearSelection = (): void => {
-    setSelectedPlaylists([]);
-    setFilter("");
-  };
-
-  const handelSelectedPlaylists = (id: string, isChecked: boolean) => {
-    if (!!playlists) {
-      const selectedPlaylistsUpdated = selectedPlaylists;
-
-      const playlist = playlists.filter((p) => p.id === id)[0];
-
-      isChecked
-        ? selectedPlaylistsUpdated.push(playlist)
-        : selectedPlaylistsUpdated.splice(
-          selectedPlaylistsUpdated.indexOf(playlist),
-          1
-        );
-
-      setSelectedPlaylists([...selectedPlaylistsUpdated]);
-    }
-  };
+  const onAddClick = async (playlistId: string) => {
+    await spotifyService?.addToPlaylist(playlistId, trackUri)
+    onClose();
+  }
 
   return (
-    <div className={styles.playlistCombiner}>
-      <p>
-        Select the playlists you want to add to a queue and start playback by
-        pressing the play button.
+    <div className={styles.addModal}>
+      <Back
+        width={32}
+        height={32}
+        style={{ position: "absolute", fill: "white", marginTop: "5px", padding: "5px 5px 5px 20px", cursor: "pointer" }}
+        onClick={() => onClose()}
+      />
+      <p style={{ justifySelf: "center" }}>
+        <b>Add to Playlist</b>
       </p>
       <div className={styles.horWraper}>
         <div className={styles.playlistRows}>
@@ -63,12 +50,12 @@ export const PlaylistCombiner = () => {
                 setFilter(e.target.value);
               }}
             />
-            <button className={styles.clearBtn} onClick={clearSelection}>
+            <button className={styles.clearBtn} onClick={() => setFilter("")}>
               Clear
             </button>
           </div>
-          {!!playlists && playlists.length > 0 ? (
-            playlists
+          {filteredPlaylists && filteredPlaylists.length > 0 ? (
+            filteredPlaylists
               .filter(
                 (p) =>
                   p.name.toLowerCase().includes(filter.toLowerCase()) ||
@@ -83,8 +70,7 @@ export const PlaylistCombiner = () => {
                   title={playlist.name}
                   secondaryText={`by ${playlist.owner.display_name}`}
                   cover={playlist.images[0]}
-                  isChecked={selectedPlaylists.includes(playlist)}
-                  handleClick={handelSelectedPlaylists}
+                  handleClick={() => onAddClick(playlist.id)}
                 />
               ))
           ) : (
@@ -101,15 +87,6 @@ export const PlaylistCombiner = () => {
             </div>
           )}
         </div>
-        <button
-          onClick={onCreatePlaylistClick}
-          className={
-            selectedPlaylists.length > 1 ? styles.createButton : styles.hide
-          }
-          disabled={selectedPlaylists.length < 2}
-        >
-          <img src={Play.default} alt="Play" />
-        </button>
       </div>
     </div>
   );

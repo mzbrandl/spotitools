@@ -2,8 +2,9 @@ import Spotify from "spotify-web-api-js";
 import ISpotifyService, { TrackWithPlaylistName } from "./ISpotifyService";
 
 export default class SpotifyService implements ISpotifyService {
+
   private spotifyApi!: Spotify.SpotifyWebApiJs;
-  private userId!: string;
+  public userId!: string;
 
   /**
    * Creates a SpotifyService instance.
@@ -184,13 +185,13 @@ export default class SpotifyService implements ISpotifyService {
       return res.items.length + res.offset === res.total
         ? res
         : {
-            ...res,
-            items: [
-              ...res.items,
-              ...(await getPlaylistTracksRecursive(playlist, offset + 100))
-                .items,
-            ],
-          };
+          ...res,
+          items: [
+            ...res.items,
+            ...(await getPlaylistTracksRecursive(playlist, offset + 100))
+              .items,
+          ],
+        };
     };
     return (await getPlaylistTracksRecursive(playlist, 0)).items;
   }
@@ -219,6 +220,75 @@ export default class SpotifyService implements ISpotifyService {
 
   public async getCurrentPlayback(): Promise<SpotifyApi.CurrentPlaybackResponse> {
     return this.spotifyApi.getMyCurrentPlaybackState();
+  }
+
+  /**
+   * Returns the track items of the given playlist.
+   * This function gets called frequently, so it contains some measures to handle API rate-limiting
+   * @param playlist the playlist for which to get the corresponding items
+   */
+  public async getLikedTracks(): Promise<SpotifyApi.PlaylistTrackObject[]> {
+    const getLikedTracksRecursive = async (
+      offset: number
+    ): Promise<SpotifyApi.PlaylistTrackResponse> => {
+      // using fetch API to get response header 'retry-after' in case of 429 code
+      const res = await fetch(
+        `https://api.spotify.com/v1/me/tracks?limit=50&offset=${offset}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${this.spotifyApi.getAccessToken()}`,
+          },
+        }
+      ).then(async (res) => {
+        // handle spotify API rate-limiting
+        if (res.headers.get("retry-after")) {
+          console.log("retry-after: " + res.headers.get("retry-after"));
+          await sleep(Number(res.headers.get("retry-after")) * 1000);
+          return await getLikedTracksRecursive(offset);
+        }
+        return res.json();
+      });
+
+      // recursively concat response items array
+      return res.items.length + res.offset === res.total
+        ? res
+        : {
+          ...res,
+          items: [
+            ...res.items,
+            ...(await getLikedTracksRecursive(offset + 50))
+              .items,
+          ],
+        };
+    };
+    return (await getLikedTracksRecursive(0)).items;
+  }
+
+  public async playTrack(track: SpotifyApi.TrackObjectFull): Promise<void> {
+    await this.spotifyApi.play({ context_uri: track.album.uri, offset: { uri: track.uri } });
+  }
+
+  /**
+   * Spotify has multiple instances of the same song for different markets.
+   * Simple comparison of id is not always enough to determine sameness.
+   */
+  public static isSameTrack(trackA: SpotifyApi.TrackObjectFull, trackB: SpotifyApi.TrackObjectFull): boolean {
+    // Check for same id
+    if (trackA.id === trackB.id) {
+      return true
+    }
+    // Check for name/artist match
+    if (`${trackA.name}:${trackA.artists[0].name}`.toLowerCase() === `${trackB.name}:${trackB.artists[0].name}`.toLowerCase()) {
+      // Check if duration difference is less than 5 seconds
+      if (Math.abs(trackA.duration_ms - trackB.duration_ms) < 5000)
+        return true
+    }
+    return false
+  }
+
+  public async addToPlaylist(playlistId: string, trackUri: string): Promise<void> {
+    await this.spotifyApi.addTracksToPlaylist(playlistId, [trackUri],)
   }
 }
 
