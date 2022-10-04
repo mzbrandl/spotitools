@@ -9,6 +9,8 @@
 
 const express = require("express"); // Express web server framework
 const request = require("request"); // "Request" library
+const util = require('util')
+const requestPromise = util.promisify(request.post);
 const cors = require("cors");
 const querystring = require("querystring");
 const cookieParser = require("cookie-parser");
