@@ -1,14 +1,21 @@
 # Spotitools
-[Spotitools](https://www.spotitools.com) is a web app using the Spotify API. It provides additional functionality, like combining playlists or checking which playlists contain a song.
+[Spotitools](https://www.spotitools.com) is a web app using the Spotify API. It provides additional functionality, like combining playlists or checking which playlists contain a song and more.
 
-### Check Song
+## Get Started
+To run the site you must create an app in the Spotify developer dashboard: [reference](https://developer.spotify.com/documentation/general/guides/authorization/app-settings/).
+Add `http://localhost:3000/callback/` as a redirect uri.
+Create a file called `client_secret.json` in the root directory and paste your client secret in it like `"12345678123456781234567812345678"`
 
-Check which of your playlists contain a specific song.
+For development run
+```bash
+npm install
+npm run client-install
+npm run dev
+```
 
-![](./assets/spotitools1.1.gif)
-
-### Queue Playlists
-
-Create a queue made up of multiple playlists.
-
-![](./assets/spotitools2.1.gif)
+For deployment run
+```bash
+npm install
+npm run build
+npm run server
+```

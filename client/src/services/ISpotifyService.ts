@@ -13,7 +13,7 @@ export default interface ISpotifyService {
    */
   queuePlaylists(
     playlists: SpotifyApi.PlaylistObjectSimplified[]
-  ): Promise<void>;
+  ): Promise<string>;
 
   /**
    * Returns all the users playlists that contain the given track.
@@ -27,7 +27,7 @@ export default interface ISpotifyService {
   /**
    * Returns the Playlists with corresponding tracks of the current user.
    */
-  getPlaylistsAndTracks(): Promise<PlaylistAndTracks[]>;
+  getPlaylistsAndTracks(progress_cb: (progress: string) => any, propsPlaylists?: SpotifyApi.PlaylistObjectSimplified[]): Promise<PlaylistAndTracks[]>;
 
   /**
    * Returns the last played track uf the current user or null.

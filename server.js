@@ -20,7 +20,10 @@ const schedule = require('node-schedule');
 
 const client_id = "a1b90597cc8449c89089422a31b8bfa1"; // Your client id
 const client_secret = require("./client_secret.json"); // Your secret
-const redirect_uri = "http://localhost:3000/callback/"; // Your redirect uri
+let redirect_uri = "https://www.spotitools.com/callback/"; // Your redirect uri
+if (process.env.NODE_ENV === "dev") {
+  redirect_uri = "http://localhost:3000/callback/";
+}
 
 const PORT = process.env.PORT || 8080;
 
@@ -82,7 +85,7 @@ const monthlyTopSongsJob = schedule.scheduleJob('0 0 1 * *', async function () {
           spotifyApi.setRefreshToken(user.refreshToken);
           spotifyApi.setAccessToken(accessToken);
           const topTracks = await spotifyApi.getMyTopTracks({ limit: 50, offset: 0, time_range: "short_term" });
-          const playlist = await spotifyApi.createPlaylist(`Your Top Songs ${monthString} ${yearString}`, { description: "Generated with spotitools.com" });
+          const playlist = await spotifyApi.createPlaylist(`Your Top Songs ${monthString} ${yearString}`, { description: "Generated with spotitools.com", public: false });
           await spotifyApi.addTracksToPlaylist(playlist.body.id, topTracks.body.items.map(track => track.uri));
         }
       } catch (error) {
@@ -101,6 +104,9 @@ app
   .set('etag', false);
 
 app.get("/login", function (_req, res) {
+
+  console.log("login called");
+  res.set('Access-Control-Allow-Origin', 'http://localhost:3000');
   const state = generateRandomString(16);
   res.cookie(stateKey, state);
 
@@ -233,7 +239,7 @@ app.put("/subscribe_monthly_export", function (req, res) {
       "userId": req.cookies["userId"],
       "refreshToken": req.cookies["refreshToken"]
     })
-    fs.writeFileSync(MONTHLY_TOP_SONGS_USERS_FILE, JSON.stringify(users));
+    fs.writeFileSync(MONTHLY_TOP_SONGS_USERS_FILE, JSON.stringify(users, 0, 2));
   }
   res.end()
 })
@@ -244,7 +250,7 @@ app.put("/unsubscribe_monthly_export", function (req, res) {
     let rawData = fs.readFileSync(MONTHLY_TOP_SONGS_USERS_FILE);
     users = JSON.parse(rawData);
     users = users.filter(item => item.userId !== req.cookies["userId"])
-    fs.writeFileSync(MONTHLY_TOP_SONGS_USERS_FILE, JSON.stringify(users));
+    fs.writeFileSync(MONTHLY_TOP_SONGS_USERS_FILE, JSON.stringify(users, 0, 2));
   }
   res.end()
 })

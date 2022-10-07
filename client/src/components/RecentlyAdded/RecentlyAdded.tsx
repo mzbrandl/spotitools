@@ -1,6 +1,8 @@
 import React, { useState, useContext, useEffect, useMemo } from "react";
 import { ClipLoader } from "react-spinners";
 import { css } from "@emotion/core";
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 
 import { playlistsAndTracksAtom, SpotifyServiceContext } from "../../App";
 import { ListResult } from "../ListResult/ListResult";
@@ -9,6 +11,8 @@ import styles from "./RecentlyAdded.module.scss";
 import { TrackWithPlaylistName } from "../../services/ISpotifyService";
 import { useAtom } from "jotai";
 import { useVirtualizer } from "@tanstack/react-virtual";
+
+dayjs.extend(relativeTime);
 
 export const RecentlyAdded = () => {
   const spotifyService = useContext(SpotifyServiceContext);
@@ -88,7 +92,7 @@ export const RecentlyAdded = () => {
                   secondaryText={`by ${track.artists
                     .map((a) => a.name)
                     .toString()}`}
-                  tertiaryText={`in ${recentlyAddedTracks[virtualItem.index].playlistName}, ${Math.floor((Date.now() - Date.parse(recentlyAddedTracks[virtualItem.index].added_at)) / 86400000)} days ago`}
+                  tertiaryText={`Added to ${recentlyAddedTracks[virtualItem.index].playlistName}, ${dayjs().to(dayjs(recentlyAddedTracks[virtualItem.index].added_at))}`}
                   handleClick={() => spotifyService?.playTrack(track)}
                   cover={track.album.images[0]}
                 />
