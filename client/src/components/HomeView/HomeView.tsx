@@ -22,7 +22,7 @@ export const HomeView = ({ isLoggedIn }: IHomeViewProps) => {
       {!isLoggedIn && (<>
         <p >Features include:
         </p>
-        <ul style={{ textAlign: "start" }}>
+        <ul style={{ textAlign: "start", alignSelf: "center" }}>
           <li>Check which playlists contain a song</li>
           <li>Merge multiple playlists</li>
           <li>Export monthly top songs as playlist</li>

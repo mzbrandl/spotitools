@@ -15,6 +15,7 @@ import ClipLoader from "react-spinners/ClipLoader";
 import { css } from "@emotion/react";
 import { LikeCatalog } from "./components/LikeCatalog/LikeCatalog";
 import { ReactComponent as Back } from "./assets/back.svg";
+import { AuthRoute } from "./components/AuthRoute/AuthRoute";
 
 export const SpotifyServiceContext = React.createContext(
   {} as ISpotifyService | undefined
@@ -24,7 +25,6 @@ export const playlistsAndTracksAtom = atom<PlaylistAndTracks[] | null>(null);
 export const playlistsAtom = atom<SpotifyApi.PlaylistObjectSimplified[] | null>(null);
 export const likedTracksAtom = atom<SpotifyApi.PlaylistTrackObject[] | null>(null);
 export const likedTracksFilteredAtom = atom<SpotifyApi.PlaylistTrackObject[] | null>(null);
-
 
 export const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -54,8 +54,6 @@ export const App = () => {
         setSpotifyService(res),
       (error) => {
         setIsLoggedIn(false);
-        window.location.assign("/")
-        return;
       }
     );
 
@@ -85,7 +83,7 @@ export const App = () => {
       <div className="App">
         <BrowserRouter>
           <Switch>
-            <Route path="/check-song">
+            <AuthRoute isLoggedIn={isLoggedIn} path="/check-song">
               <Link className="link" to="/">
                 <Back
                   width={32}
@@ -94,8 +92,8 @@ export const App = () => {
               </Link>
               <h1>Spotitools</h1>
               <CheckSong />
-            </Route>
-            <Route path="/merge-playlists">
+            </AuthRoute>
+            <AuthRoute isLoggedIn={isLoggedIn} path="/merge-playlists">
               <Link className="link" to="/">
                 <Back
                   width={32}
@@ -104,8 +102,8 @@ export const App = () => {
               </Link>
               <h1>Spotitools</h1>
               <PlaylistCombiner />
-            </Route>
-            <Route path="/top-songs-export">
+            </AuthRoute>
+            <AuthRoute isLoggedIn={isLoggedIn} path="/top-songs-export">
               <Link className="link" to="/">
                 <Back
                   width={32}
@@ -114,8 +112,8 @@ export const App = () => {
               </Link>
               <h1>Spotitools</h1>
               <TopTracksExport />
-            </Route>
-            <Route path="/recently-added">
+            </AuthRoute>
+            <AuthRoute isLoggedIn={isLoggedIn} path="/recently-added">
               <Link className="link" to="/">
                 <Back
                   width={32}
@@ -124,8 +122,8 @@ export const App = () => {
               </Link>
               <h1>Spotitools</h1>
               <RecentlyAdded />
-            </Route>
-            <Route path="/like-catalog">
+            </AuthRoute>
+            <AuthRoute isLoggedIn={isLoggedIn} path="/like-catalog">
               <Link className="link" to="/">
                 <Back
                   width={32}
@@ -134,7 +132,7 @@ export const App = () => {
               </Link>
               <h1>Spotitools</h1>
               <LikeCatalog />
-            </Route>
+            </AuthRoute>
             <Route path="/*">
               <HomeView isLoggedIn={isLoggedIn} />
             </Route>
