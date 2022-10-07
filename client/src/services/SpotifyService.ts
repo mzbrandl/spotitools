@@ -36,12 +36,12 @@ export default class SpotifyService implements ISpotifyService {
 
   public async queuePlaylists(
     playlists: SpotifyApi.PlaylistObjectSimplified[]
-  ): Promise<void> {
+  ): Promise<string> {
     // create new playlist
     const queuePlaylist = await this.spotifyApi.createPlaylist(this.userId, {
-      name: "Queued Playlists",
-      description: `Queue of following playlists:${playlists
-        .map((p) => ` "${p.name}"`)
+      name: "Merged Playlist",
+      description: `Combines the playlists:${playlists
+        .map((p) => ` ${p.name}`)
         .toString()}`,
     });
 
@@ -53,9 +53,11 @@ export default class SpotifyService implements ISpotifyService {
 
     await this.spotifyApi.setShuffle(true);
 
-    await this.spotifyApi.unfollowPlaylist(queuePlaylist.id);
-
     window.location.replace(queuePlaylist.uri);
+    return queuePlaylist.uri;
+
+    // await this.spotifyApi.unfollowPlaylist(queuePlaylist.id);
+
   }
 
   public async getLatestPlaybackItem(): Promise<SpotifyApi.TrackObjectFull | null> {
@@ -81,22 +83,31 @@ export default class SpotifyService implements ISpotifyService {
       .map((pat) => pat.playlist);
   }
 
-  public async getPlaylistsAndTracks(): Promise<
+  public async getPlaylistsAndTracks(progress_cb: (progress: string) => any, propsPlaylists?: SpotifyApi.PlaylistObjectSimplified[]): Promise<
     {
       playlist: SpotifyApi.PlaylistObjectSimplified;
       items: SpotifyApi.PlaylistTrackObject[];
     }[]
   > {
-    const playlists = (await this.getPlaylists()).filter(
+    let playlists = propsPlaylists || await this.getPlaylists();
+    playlists = playlists.filter(
       (playlist) =>
         playlist.owner.id === this.userId || playlist.collaborative === true
     );
 
-    return Promise.all(
-      playlists.map(async (playlist) => {
-        return { playlist, items: await this.getPlaylistTracks(playlist) };
-      })
-    );
+    let counter = 0;
+
+    const playlistPromises = playlists.map(async (playlist) => {
+      return { playlist, items: await this.getPlaylistTracks(playlist) };
+    })
+
+    for (const p of playlistPromises) {
+      p.then(() => {
+        counter++;
+        progress_cb(`Loaded ${counter} of ${playlistPromises?.length} playlists`);
+      });
+    }
+    return Promise.all(playlistPromises);
   }
 
   public async searchTracks(
@@ -174,9 +185,9 @@ export default class SpotifyService implements ISpotifyService {
       ).then(async (res) => {
         // handle spotify API rate-limiting
         if (res.headers.get("retry-after")) {
-          console.log("retry-after: " + res.headers.get("retry-after"));
+          // console.log("retry-after: " + res.headers.get("retry-after"));
           await sleep(Number(res.headers.get("retry-after")) * 1000);
-          return await getPlaylistTracksRecursive(playlist, offset);
+          return getPlaylistTracksRecursive(playlist, offset);
         }
         return res.json();
       });
@@ -213,7 +224,7 @@ export default class SpotifyService implements ISpotifyService {
     }
     const accumulatedTracks = accumulatedPlaylistTracks.map((tr) => tr.track);
     const uniqueAccumulatedTracks = accumulatedTracks.filter(
-      (item, index, self) => self.findIndex((i) => i.id === item.id) === index
+      (item, index, self) => self.findIndex((i) => SpotifyService.isSameTrack(i as SpotifyApi.TrackObjectFull, item as SpotifyApi.TrackObjectFull)) === index
     );
     return uniqueAccumulatedTracks;
   };
@@ -243,7 +254,7 @@ export default class SpotifyService implements ISpotifyService {
       ).then(async (res) => {
         // handle spotify API rate-limiting
         if (res.headers.get("retry-after")) {
-          console.log("retry-after: " + res.headers.get("retry-after"));
+          // console.log("retry-after: " + res.headers.get("retry-after"));
           await sleep(Number(res.headers.get("retry-after")) * 1000);
           return await getLikedTracksRecursive(offset);
         }

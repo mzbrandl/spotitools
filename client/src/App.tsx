@@ -14,6 +14,7 @@ import { atom, useAtom } from "jotai";
 import ClipLoader from "react-spinners/ClipLoader";
 import { css } from "@emotion/react";
 import { LikeCatalog } from "./components/LikeCatalog/LikeCatalog";
+import { ReactComponent as Back } from "./assets/back.svg";
 
 export const SpotifyServiceContext = React.createContext(
   {} as ISpotifyService | undefined
@@ -29,9 +30,10 @@ export const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [spotifyService, setSpotifyService] = useState<ISpotifyService>();
   const [playlistsAndTracks, setPlaylistsAndTracks] = useAtom(playlistsAndTracksAtom);
-  const [playlists, setplaylists] = useAtom(playlistsAtom);
+  const [playlists, setPlaylists] = useAtom(playlistsAtom);
   const [likedTracks, setLikedTracks] = useAtom(likedTracksAtom);
   const [loadingUserData, setLoadingUserData] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const cookies = Object.assign(
@@ -63,12 +65,15 @@ export const App = () => {
     (async () => {
       if (isLoggedIn && !!spotifyService) {
         setLoadingUserData(true)
-        const playlistTracks = await spotifyService?.getPlaylistsAndTracks();
+        setLoadingMessage("Scanning playlists...")
+        const playlists = await spotifyService.getPlaylists();
+        setPlaylists(playlists);
+        const playlistTracks = await spotifyService?.getPlaylistsAndTracks((progress) => setLoadingMessage(progress), playlists);
         setPlaylistsAndTracks(playlistTracks);
+        setLoadingMessage("Loading likes...")
         const likedTracks = await spotifyService?.getLikedTracks();
         setLikedTracks(likedTracks);
-        const playlists = await spotifyService.getPlaylists();
-        setplaylists(playlists);
+        setLoadingMessage(undefined)
         setLoadingUserData(false);
       }
     })();
@@ -80,38 +85,55 @@ export const App = () => {
         <BrowserRouter>
           <Switch>
             <Route path="/check-song">
-              <Link to="/">
-                <h1>Spotitools</h1>
+              <Link className="link" to="/">
+                <Back
+                  width={32}
+                  height={32}
+                />
               </Link>
+              <h1>Spotitools</h1>
               <CheckSong />
             </Route>
-            <Route path="/queue-playlists">
-              <Link to="/">
-                <h1>Spotitools</h1>
+            <Route path="/merge-playlists">
+              <Link className="link" to="/">
+                <Back
+                  width={32}
+                  height={32}
+                />
               </Link>
+              <h1>Spotitools</h1>
               <PlaylistCombiner />
             </Route>
             <Route path="/top-songs-export">
-              <Link to="/">
-                <h1>Spotitools</h1>
+              <Link className="link" to="/">
+                <Back
+                  width={32}
+                  height={32}
+                />
               </Link>
+              <h1>Spotitools</h1>
               <TopTracksExport />
             </Route>
             <Route path="/recently-added">
-              <Link to="/">
-                <h1>Spotitools</h1>
+              <Link className="link" to="/">
+                <Back
+                  width={32}
+                  height={32}
+                />
               </Link>
+              <h1>Spotitools</h1>
               <RecentlyAdded />
             </Route>
             <Route path="/like-catalog">
-              <Link to="/">
-                <h1>Spotitools</h1>
+              <Link className="link" to="/">
+                <Back
+                  width={32}
+                  height={32}
+                />
               </Link>
+              <h1>Spotitools</h1>
               <LikeCatalog />
             </Route>
-            {/* <Route path="/combine-playlists">
-              <p>Playlist combiner under construction...</p>
-            </Route> */}
             <Route path="/*">
               <HomeView isLoggedIn={isLoggedIn} />
             </Route>
@@ -128,7 +150,7 @@ export const App = () => {
               loading={true}
             />
             <span>
-              Loading user data...
+              {loadingMessage}
             </span>
           </div>
         </div>}

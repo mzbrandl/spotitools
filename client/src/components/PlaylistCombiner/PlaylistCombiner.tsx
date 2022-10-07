@@ -17,10 +17,13 @@ export const PlaylistCombiner = () => {
     SpotifyApi.PlaylistObjectSimplified[]
   >([]);
   const [filter, setFilter] = useState("");
+  const [loading, setLoading] = useState(false)
 
   const onCreatePlaylistClick = async () => {
-    await spotifyService?.queuePlaylists(selectedPlaylists);
+    setLoading(true)
+    const url = await spotifyService?.queuePlaylists(selectedPlaylists);
     clearSelection();
+    setLoading(false);
   };
 
   const clearSelection = (): void => {
@@ -48,8 +51,7 @@ export const PlaylistCombiner = () => {
   return (
     <div className={styles.playlistCombiner}>
       <p>
-        Select the playlists you want to add to a queue and start playback by
-        pressing the play button.
+        Select the playlists you want to merge. Duplicate songs will be filtered.
       </p>
       <div className={styles.horWraper}>
         <div className={styles.playlistRows}>
@@ -84,7 +86,7 @@ export const PlaylistCombiner = () => {
                   secondaryText={`by ${playlist.owner.display_name}`}
                   cover={playlist.images[0]}
                   isChecked={selectedPlaylists.includes(playlist)}
-                  handleClick={handelSelectedPlaylists}
+                  handleClick={!loading ? handelSelectedPlaylists : undefined}
                 />
               ))
           ) : (
@@ -106,10 +108,22 @@ export const PlaylistCombiner = () => {
           className={
             selectedPlaylists.length > 1 ? styles.createButton : styles.hide
           }
-          disabled={selectedPlaylists.length < 2}
+          style={loading ? { cursor: "default", opacity: "0.6" } : {}}
+          disabled={loading || selectedPlaylists.length < 2}
         >
           <img src={Play.default} alt="Play" />
         </button>
+        {loading && <div className={styles.mergeLoading} >
+          <ClipLoader
+            css={css`
+                  align-self: center;
+                `}
+            size={30}
+            color={"#1db954"}
+            loading={true}
+          />
+          <span>Merging playlists...</span>
+        </div>}
       </div>
     </div>
   );

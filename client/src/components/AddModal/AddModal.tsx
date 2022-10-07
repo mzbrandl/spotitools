@@ -28,64 +28,66 @@ export const AddModal: React.FC<IAddModalProps> = ({ trackUri, onClose }) => {
   }
 
   return (
-    <div className={styles.addModal}>
-      <Back
-        width={32}
-        height={32}
-        style={{ position: "absolute", fill: "white", marginTop: "5px", padding: "5px 5px 5px 20px", cursor: "pointer" }}
-        onClick={() => onClose()}
-      />
-      <p style={{ justifySelf: "center" }}>
-        <b>Add to Playlist</b>
-      </p>
-      <div className={styles.horWraper}>
-        <div className={styles.playlistRows}>
-          <div className={styles.controls}>
-            <input
-              type="search"
-              className={styles.filter}
-              placeholder="Filter"
-              value={filter}
-              onChange={(e) => {
-                setFilter(e.target.value);
-              }}
-            />
-            <button className={styles.clearBtn} onClick={() => setFilter("")}>
-              Clear
-            </button>
-          </div>
-          {filteredPlaylists && filteredPlaylists.length > 0 ? (
-            filteredPlaylists
-              .filter(
-                (p) =>
-                  p.name.toLowerCase().includes(filter.toLowerCase()) ||
-                  p.owner.display_name
-                    ?.toLowerCase()
-                    .includes(filter.toLowerCase())
-              )
-              .map((playlist, key) => (
-                <ListResult
-                  key={key}
-                  id={playlist.id}
-                  title={playlist.name}
-                  secondaryText={`by ${playlist.owner.display_name}`}
-                  cover={playlist.images[0]}
-                  handleClick={() => onAddClick(playlist.id)}
-                />
-              ))
-          ) : (
-            <div className={styles.loadingPlaylists}>
-              <ClipLoader
-                css={css`
+    <div className={styles.backdrop}>
+      <div className={styles.addModal}>
+        <Back
+          width={32}
+          height={32}
+          style={{ position: "absolute", fill: "white", marginTop: "10px", padding: "5px 5px 5px 20px", cursor: "pointer" }}
+          onClick={() => onClose()}
+        />
+        <p style={{ justifySelf: "center", fontSize: "1.2em" }}>
+          <b>Add to Playlist</b>
+        </p>
+        <div className={styles.horWraper}>
+          <div className={styles.playlistRows}>
+            <div className={styles.controls}>
+              <input
+                type="search"
+                className={styles.filter}
+                placeholder="Filter"
+                value={filter}
+                onChange={(e) => {
+                  setFilter(e.target.value);
+                }}
+              />
+              <button className={styles.clearBtn} onClick={() => setFilter("")}>
+                Clear
+              </button>
+            </div>
+            {filteredPlaylists && filteredPlaylists.length > 0 ? (
+              filteredPlaylists
+                .filter(
+                  (p) =>
+                    p.name.toLowerCase().includes(filter.toLowerCase()) ||
+                    p.owner.display_name
+                      ?.toLowerCase()
+                      .includes(filter.toLowerCase())
+                )
+                .map((playlist, key) => (
+                  <ListResult
+                    key={key}
+                    id={playlist.id}
+                    title={playlist.name}
+                    secondaryText={`by ${playlist.owner.display_name}`}
+                    cover={playlist.images[0]}
+                    handleClick={() => onAddClick(playlist.id)}
+                  />
+                ))
+            ) : (
+              <div className={styles.loadingPlaylists}>
+                <ClipLoader
+                  css={css`
                   align-self: center;
                 `}
-                size={30}
-                color={"#1db954"}
-                loading={true}
-              />
-              <span>Loading playlists...</span>
-            </div>
-          )}
+                  size={30}
+                  color={"#1db954"}
+                  loading={true}
+                />
+                <span>Loading playlists...</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

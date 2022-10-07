@@ -27,3 +27,15 @@
   margin-left: 10px;
   color: #d6d6d6;
 }
+
+.link {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+}
+
+.link svg {
+  fill: white;
+  padding: 5px 5px 5px 10px;
+  cursor: pointer;
+}
