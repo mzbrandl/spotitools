@@ -254,14 +254,15 @@ app.put("/unsubscribe_monthly_export", function (req, res) {
 
 app.get("/monthly_export", function (req, res) {
   res.setHeader("Cache-Control", "no-cache");
+  let result = false;
   if (fs.existsSync(MONTHLY_TOP_SONGS_USERS_FILE)) {
     let rawData = fs.readFileSync(MONTHLY_TOP_SONGS_USERS_FILE);
     let users = JSON.parse(rawData);
     if (users.some(item => item.userId === req.cookies["userId"])) {
-      res.send({ result: true })
+      result = true;
     }
   }
-  res.send({ result: false })
+  res.send({ result: result })
 })
 
 app.use("*", express.static(__dirname + "/client/build"));
