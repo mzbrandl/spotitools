@@ -54,6 +54,7 @@ export const App = () => {
         setSpotifyService(res),
       (error) => {
         setIsLoggedIn(false);
+        window.location.assign("/")
         return;
       }
     );
