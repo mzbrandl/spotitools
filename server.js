@@ -15,19 +15,17 @@ const cors = require("cors");
 const querystring = require("querystring");
 const cookieParser = require("cookie-parser");
 const SpotifyWebApi = require('spotify-web-api-node');
-const fs = require('fs');
 const schedule = require('node-schedule');
 
-const client_id = "a1b90597cc8449c89089422a31b8bfa1"; // Your client id
-const client_secret = require("./client_secret.json"); // Your secret
-let redirect_uri = "https://www.spotitools.com/callback/"; // Your redirect uri
-if (process.env.NODE_ENV === "dev") {
-  redirect_uri = "http://localhost:3000/callback/";
-}
+const client_id = process.env.SPOTIFY_CLIENT_ID || "a1b90597cc8449c89089422a31b8bfa1";
+const client_secret = process.env.SPOTIFY_CLIENT_SECRET || require("./client_secret.json");
+const redirect_uri = process.env.REDIRECT_URI || (process.env.NODE_ENV === "dev"
+  ? "http://localhost:3000/callback/"
+  : "https://www.spotitools.com/callback/");
 
 const PORT = process.env.PORT || 8080;
 
-const MONTHLY_TOP_SONGS_USERS_FILE = "./monthlyExportUsers.json";
+const db = require("./db");
 
 const spotifyApi = new SpotifyWebApi({
   clientId: client_id,
@@ -57,40 +55,45 @@ const stateKey = "spotify_auth_state";
  * At the start of the month generate a playlist of users top songs from the previous month.
  */
 const monthlyTopSongsJob = schedule.scheduleJob('0 0 1 * *', async function () {
-  if (fs.existsSync(MONTHLY_TOP_SONGS_USERS_FILE)) {
-    const rawData = fs.readFileSync(MONTHLY_TOP_SONGS_USERS_FILE);
-    const users = JSON.parse(rawData);
-    const formatter = new Intl.DateTimeFormat('en', { month: 'long' });
-    const yearFormatter = new Intl.DateTimeFormat('en', { year: 'numeric' });
-    let monthString = formatter.format(new Date().setMonth(new Date().getMonth() - 1));
-    let yearString = yearFormatter.format(new Date());
-    for (const user of users) {
-      try {
-        const authOptions = {
-          url: "https://accounts.spotify.com/api/token",
-          headers: {
-            Authorization:
-              "Basic " +
-              Buffer.from(client_id + ":" + client_secret).toString("base64"),
-          },
-          form: {
-            grant_type: "refresh_token",
-            refresh_token: user.refreshToken,
-          },
-          json: true,
-        };
-        const res = await requestPromise(authOptions)
-        if (res.statusCode === 200) {
-          const accessToken = res.body.access_token;
-          spotifyApi.setRefreshToken(user.refreshToken);
-          spotifyApi.setAccessToken(accessToken);
-          const topTracks = await spotifyApi.getMyTopTracks({ limit: 50, offset: 0, time_range: "short_term" });
-          const playlist = await spotifyApi.createPlaylist(`Your Top Songs ${monthString} ${yearString}`, { description: "Generated with spotitools.com", public: false });
-          await spotifyApi.addTracksToPlaylist(playlist.body.id, topTracks.body.items.map(track => track.uri));
-        }
-      } catch (error) {
-        console.error(error);
+  const users = db.getAllSubscribers();
+  if (users.length === 0) {
+    console.log("[monthly-export] No subscribers, skipping.");
+    return;
+  }
+  const formatter = new Intl.DateTimeFormat('en', { month: 'long' });
+  const yearFormatter = new Intl.DateTimeFormat('en', { year: 'numeric' });
+  let monthString = formatter.format(new Date().setMonth(new Date().getMonth() - 1));
+  let yearString = yearFormatter.format(new Date());
+  console.log(`[monthly-export] Processing ${users.length} subscribers for ${monthString} ${yearString}`);
+  for (const user of users) {
+    try {
+      const authOptions = {
+        url: "https://accounts.spotify.com/api/token",
+        headers: {
+          Authorization:
+            "Basic " +
+            Buffer.from(client_id + ":" + client_secret).toString("base64"),
+        },
+        form: {
+          grant_type: "refresh_token",
+          refresh_token: user.refreshToken,
+        },
+        json: true,
+      };
+      const res = await requestPromise(authOptions)
+      if (res.statusCode === 200) {
+        const accessToken = res.body.access_token;
+        spotifyApi.setRefreshToken(user.refreshToken);
+        spotifyApi.setAccessToken(accessToken);
+        const topTracks = await spotifyApi.getMyTopTracks({ limit: 50, offset: 0, time_range: "short_term" });
+        const playlist = await spotifyApi.createPlaylist(`Your Top Songs ${monthString} ${yearString}`, { description: "Generated with spotitools.com", public: false });
+        await spotifyApi.addTracksToPlaylist(playlist.body.id, topTracks.body.items.map(track => track.uri));
+        console.log(`[monthly-export] ✓ Created playlist for ${user.userId}`);
+      } else {
+        console.error(`[monthly-export] ✗ Token refresh failed for ${user.userId}: ${res.statusCode}`);
       }
+    } catch (error) {
+      console.error(`[monthly-export] ✗ Error for ${user.userId}:`, error.message);
     }
   }
 });
@@ -226,44 +229,29 @@ app.get("/refresh_token", function (req, res) {
 });
 
 app.put("/subscribe_monthly_export", function (req, res) {
-  let users = [];
-  if (fs.existsSync(MONTHLY_TOP_SONGS_USERS_FILE)) {
-    let rawData = fs.readFileSync(MONTHLY_TOP_SONGS_USERS_FILE);
-    users = JSON.parse(rawData);
+  const userId = req.cookies["userId"];
+  const refreshToken = req.cookies["refreshToken"];
+  if (userId && refreshToken) {
+    db.subscribe(userId, refreshToken);
+    console.log(`[subscribe] ${userId}`);
   }
-  if (!users.some(item => item.userId === req.cookies["userId"])) {
-    users.push({
-      "userId": req.cookies["userId"],
-      "refreshToken": req.cookies["refreshToken"]
-    })
-    fs.writeFileSync(MONTHLY_TOP_SONGS_USERS_FILE, JSON.stringify(users, 0, 2));
-  }
-  res.end()
-})
+  res.end();
+});
 
 app.put("/unsubscribe_monthly_export", function (req, res) {
-  let users = [];
-  if (fs.existsSync(MONTHLY_TOP_SONGS_USERS_FILE)) {
-    let rawData = fs.readFileSync(MONTHLY_TOP_SONGS_USERS_FILE);
-    users = JSON.parse(rawData);
-    users = users.filter(item => item.userId !== req.cookies["userId"])
-    fs.writeFileSync(MONTHLY_TOP_SONGS_USERS_FILE, JSON.stringify(users, 0, 2));
+  const userId = req.cookies["userId"];
+  if (userId) {
+    db.unsubscribe(userId);
+    console.log(`[unsubscribe] ${userId}`);
   }
-  res.end()
-})
+  res.end();
+});
 
 app.get("/monthly_export", function (req, res) {
   res.setHeader("Cache-Control", "no-cache");
-  let result = false;
-  if (fs.existsSync(MONTHLY_TOP_SONGS_USERS_FILE)) {
-    let rawData = fs.readFileSync(MONTHLY_TOP_SONGS_USERS_FILE);
-    let users = JSON.parse(rawData);
-    if (users.some(item => item.userId === req.cookies["userId"])) {
-      result = true;
-    }
-  }
-  res.send({ result: result })
-})
+  const userId = req.cookies["userId"];
+  res.send({ result: userId ? db.isSubscribed(userId) : false });
+});
 
 app.use("*", express.static(__dirname + "/client/build"));
 
