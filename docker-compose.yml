@@ -17,8 +17,7 @@ services:
       context: .
       target: webserver
     ports:
-      - "80:80"
-      - "443:443"
+      - "127.0.0.1:8080:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro,Z
     depends_on:
