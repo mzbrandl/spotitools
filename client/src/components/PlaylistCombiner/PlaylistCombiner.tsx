@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import ClipLoader from "react-spinners/ClipLoader";
-import { css } from "@emotion/core";
-
+import { css } from '@emotion/react'
 import { playlistsAtom, SpotifyServiceContext } from "../../App";
 import * as Play from "../../assets/play.png";
 import { ListResult } from "../ListResult/ListResult";
@@ -92,9 +91,7 @@ export const PlaylistCombiner = () => {
           ) : (
             <div className={styles.loadingPlaylists}>
               <ClipLoader
-                css={css`
-                  align-self: center;
-                `}
+                cssOverride={{alignSelf: 'center'}}
                 size={30}
                 color={"#1db954"}
                 loading={true}
@@ -115,9 +112,7 @@ export const PlaylistCombiner = () => {
         </button>
         {loading && <div className={styles.mergeLoading} >
           <ClipLoader
-            css={css`
-                  align-self: center;
-                `}
+            cssOverride={{alignSelf: 'center'}}
             size={30}
             color={"#1db954"}
             loading={true}

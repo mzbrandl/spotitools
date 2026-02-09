@@ -1,0 +1,40 @@
+# =============================================================
+# Development Dockerfile with hot reloading
+# =============================================================
+
+# =============================================================
+# Stage: Server (Express with nodemon)
+# =============================================================
+FROM node:20-slim AS server
+
+WORKDIR /app
+
+# Install dependencies
+COPY package*.json ./
+RUN npm install
+
+# Create db directory (will be mounted as volume)
+RUN mkdir -p ./db
+
+EXPOSE 3001
+
+CMD ["npx", "nodemon", "--watch", "server.js", "server.js"]
+
+
+# =============================================================
+# Stage: Client (React dev server with hot reload)
+# =============================================================
+FROM node:20-alpine AS client
+
+WORKDIR /app
+
+# Install dependencies first for better caching
+COPY client/package*.json ./
+RUN npm install
+
+# Copy source (will be overridden by volume mount)
+COPY client/ ./
+
+EXPOSE 3000
+
+CMD ["npm", "start"]

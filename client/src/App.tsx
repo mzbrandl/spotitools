@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
+import { BrowserRouter, Route, Link, Routes } from "react-router-dom";
 
 import { HomeView } from "./components/HomeView/HomeView";
 import { CheckSong } from "./components/CheckSong/CheckSong";
@@ -82,68 +82,78 @@ export const App = () => {
     <SpotifyServiceContext.Provider value={spotifyService}>
       <div className="App">
         <BrowserRouter>
-          <Switch>
-            <AuthRoute isLoggedIn={isLoggedIn} path="/check-song">
-              <Link className="link" to="/">
-                <Back
-                  width={32}
-                  height={32}
-                />
-              </Link>
-              <h1>Spotitools</h1>
-              <CheckSong />
-            </AuthRoute>
-            <AuthRoute isLoggedIn={isLoggedIn} path="/merge-playlists">
-              <Link className="link" to="/">
-                <Back
-                  width={32}
-                  height={32}
-                />
-              </Link>
-              <h1>Spotitools</h1>
-              <PlaylistCombiner />
-            </AuthRoute>
-            <AuthRoute isLoggedIn={isLoggedIn} path="/top-songs-export">
-              <Link className="link" to="/">
-                <Back
-                  width={32}
-                  height={32}
-                />
-              </Link>
-              <h1>Spotitools</h1>
-              <TopTracksExport />
-            </AuthRoute>
-            <AuthRoute isLoggedIn={isLoggedIn} path="/recently-added">
-              <Link className="link" to="/">
-                <Back
-                  width={32}
-                  height={32}
-                />
-              </Link>
-              <h1>Spotitools</h1>
-              <RecentlyAdded />
-            </AuthRoute>
-            <AuthRoute isLoggedIn={isLoggedIn} path="/like-catalog">
-              <Link className="link" to="/">
-                <Back
-                  width={32}
-                  height={32}
-                />
-              </Link>
-              <h1>Spotitools</h1>
-              <LikeCatalog />
-            </AuthRoute>
-            <Route path="/*">
-              <HomeView isLoggedIn={isLoggedIn} />
-            </Route>
-          </Switch>
+          <Routes>
+            <Route
+              path="/check-song"
+              element={
+                <AuthRoute isLoggedIn={isLoggedIn}>
+                  <Link className="link" to="/">
+                    <Back width={32} height={32} />
+                  </Link>
+                  <h1>Spotitools</h1>
+                  <CheckSong />
+                </AuthRoute>
+              }
+            />
+            <Route
+              path="/merge-playlists"
+              element={
+                <AuthRoute isLoggedIn={isLoggedIn}>
+                  <Link className="link" to="/">
+                    <Back
+                      width={32}
+                      height={32}
+                    />
+                  </Link>
+                  <h1>Spotitools</h1>
+                  <PlaylistCombiner />
+                </AuthRoute>} />
+            <Route
+              path="/top-songs-export"
+              element={
+                <AuthRoute isLoggedIn={isLoggedIn}>
+                  <Link className="link" to="/">
+                    <Back
+                      width={32}
+                      height={32}
+                    />
+                  </Link>
+                  <h1>Spotitools</h1>
+                  <TopTracksExport />
+                </AuthRoute>} />
+            <Route
+              path="/recently-added"
+              element={
+                <AuthRoute isLoggedIn={isLoggedIn} >
+                  <Link className="link" to="/">
+                    <Back
+                      width={32}
+                      height={32}
+                    />
+                  </Link>
+                  <h1>Spotitools</h1>
+                  <RecentlyAdded />
+                </AuthRoute>} />
+            <Route
+              path="/like-catalog"
+              element={
+                <AuthRoute isLoggedIn={isLoggedIn} >
+                  <Link className="link" to="/">
+                    <Back
+                      width={32}
+                      height={32}
+                    />
+                  </Link>
+                  <h1>Spotitools</h1>
+                  <LikeCatalog />
+                </AuthRoute>} />
+            <Route path="/*" element={<HomeView isLoggedIn={isLoggedIn} />} />
+          </Routes>
         </BrowserRouter>
         {loadingUserData && <div className="LoadingWrapper">
           <div className="LoadingUserDataIndicator">
             <ClipLoader
-              css={css`
-              align-self: center;
-            `}
+              cssOverride={{ alignSelf: 'center' }}
               size={16}
               color={"#1db954"}
               loading={true}

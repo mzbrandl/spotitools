@@ -25,9 +25,11 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --production
 
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
 # Copy server code
 COPY server.js ./
-COPY db/index.js ./db/
+COPY db/ ./db/
 COPY migration/migrate.js ./migration/
 
 # Copy built client
@@ -35,8 +37,9 @@ COPY --from=client-builder /client/build ./client/build
 
 EXPOSE 3001
 
-# Use non-root user
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN mkdir -p /app/data
+COPY db/index.js ./db/
+RUN chown -R appuser:appuser /app
 USER appuser
 
 CMD ["node", "server.js"]

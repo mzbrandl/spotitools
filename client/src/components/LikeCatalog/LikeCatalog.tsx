@@ -1,7 +1,6 @@
 import React, { useState, useContext, useEffect, useMemo } from "react";
 import { ClipLoader } from "react-spinners";
-import { css } from "@emotion/core";
-
+import { css } from '@emotion/react'
 import { likedTracksAtom, likedTracksFilteredAtom, playlistsAndTracksAtom, SpotifyServiceContext } from "../../App";
 import { ListResult } from "../ListResult/ListResult";
 import styles from "./LikeCatalog.module.scss";
@@ -122,9 +121,7 @@ export const LikeCatalog = () => {
       </div>
         : <div className={styles.loadingPlaylists}>
           <ClipLoader
-            css={css`
-                align-self: center;
-              `}
+            cssOverride={{alignSelf: 'center'}}
             size={30}
             color={"#1db954"}
             loading={true}

@@ -1,19 +1,15 @@
-version: '3.8'
-
 services:
   app:
     build:
       context: .
       target: server
+    env_file: .env
     environment:
       - NODE_ENV=production
-      - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID}
-      - SPOTIFY_CLIENT_SECRET=${SPOTIFY_CLIENT_SECRET}
-      - REDIRECT_URI=${REDIRECT_URI}
       - PORT=3001
+      - DB_PATH=/app/data/subscribers.db
     volumes:
-      - ./db:/app/db                      # Persistent SQLite database
-      - ./client_secret.json:/app/client_secret.json:ro # Fallback if env not set
+      - ./db:/app/data:rw,Z
     restart: always
 
   webserver:
@@ -21,11 +17,10 @@ services:
       context: .
       target: webserver
     ports:
-      - "80:80"     # Map local port 80 to container 80
-      - "443:443"   # Map local port 443 to container 443
+      - "80:80"
+      - "443:443"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./client/build:/usr/share/nginx/html:ro  # Optional: mount local build for dev
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro,Z
     depends_on:
       - app
     restart: always

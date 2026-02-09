@@ -7,6 +7,7 @@
  * https://developer.spotify.com/web-api/authorization-guide/#authorization_code_flow
  */
 
+require("dotenv").config();
 const express = require("express"); // Express web server framework
 const request = require("request"); // "Request" library
 const util = require('util')
@@ -17,21 +18,37 @@ const cookieParser = require("cookie-parser");
 const SpotifyWebApi = require('spotify-web-api-node');
 const schedule = require('node-schedule');
 
-const client_id = process.env.SPOTIFY_CLIENT_ID || "a1b90597cc8449c89089422a31b8bfa1";
-const client_secret = process.env.SPOTIFY_CLIENT_SECRET || require("./client_secret.json");
-const redirect_uri = process.env.REDIRECT_URI || (process.env.NODE_ENV === "dev"
-  ? "http://localhost:3000/callback/"
-  : "https://www.spotitools.com/callback/");
+const client_id = process.env.SPOTIFY_CLIENT_ID;
+const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
 
 const PORT = process.env.PORT || 8080;
 
-const db = require("./db");
+const db = require("./db/index.js");
 
 const spotifyApi = new SpotifyWebApi({
   clientId: client_id,
   clientSecret: client_secret,
-  redirectUri: redirect_uri
 });
+
+/**
+ * Returns the OAuth redirect URI.
+ * Uses the REDIRECT_URI env var if set, otherwise derives it from the request.
+ * Spotify requires loopback IPs (not "localhost") with an explicit port.
+ */
+function getRedirectUri(req) {
+  if (process.env.REDIRECT_URI) {
+    return process.env.REDIRECT_URI;
+  }
+  let host = req.get('host');
+  // Spotify disallows "localhost" — use the loopback IP instead
+  host = host.replace(/^localhost(:|$)/, '127.0.0.1$1');
+  // Spotify requires an explicit port for loopback IPs
+  if (host.match(/^127\.0\.0\.1$/) || host.match(/^\[::1\]$/)) {
+    const defaultPort = req.protocol === 'https' ? 443 : 80;
+    host = `${host}:${defaultPort}`;
+  }
+  return `${req.protocol}://${host}/callback`;
+}
 
 /**
  * Generates a random string containing numbers and letters
@@ -100,13 +117,15 @@ const monthlyTopSongsJob = schedule.scheduleJob('0 0 1 * *', async function () {
 
 const app = express();
 
+app.set('trust proxy', true);
+
 app
   .use(express.static(__dirname + "/client/build"))
   .use(cors())
   .use(cookieParser())
   .set('etag', false);
 
-app.get("/login", function (_req, res) {
+app.get("/login", function (req, res) {
   const state = generateRandomString(16);
   res.cookie(stateKey, state);
 
@@ -129,7 +148,7 @@ app.get("/login", function (_req, res) {
       response_type: "code",
       client_id: client_id,
       scope: scope,
-      redirect_uri: redirect_uri,
+      redirect_uri: getRedirectUri(req),
       state: state,
     })
   );
@@ -156,7 +175,7 @@ app.get("/callback", function (req, res) {
       url: "https://accounts.spotify.com/api/token",
       form: {
         code: code,
-        redirect_uri: redirect_uri,
+        redirect_uri: getRedirectUri(req),
         grant_type: "authorization_code",
       },
       headers: {
