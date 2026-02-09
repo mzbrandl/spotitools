@@ -38,7 +38,6 @@ COPY --from=client-builder /client/build ./client/build
 EXPOSE 3001
 
 RUN mkdir -p /app/data
-COPY db/index.js ./db/
 RUN chown -R appuser:appuser /app
 USER appuser
 
