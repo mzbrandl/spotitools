@@ -2,7 +2,7 @@ node_modules
 client/node_modules
 .git
 .env
-db/
+db/*.db
 migration/subscribers.json
 assets
 *.gif

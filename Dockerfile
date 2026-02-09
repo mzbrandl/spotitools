@@ -6,7 +6,7 @@ FROM node:20-alpine AS client-builder
 WORKDIR /client
 COPY client/package*.json ./
 # Clean install (includes the new 'sass' package)
-RUN npm ci
+RUN npm install
 
 COPY client/ ./
 # node-sass was the only thing holding us back on Node 18.
@@ -38,7 +38,6 @@ COPY --from=client-builder /client/build ./client/build
 EXPOSE 3001
 
 RUN mkdir -p /app/data
-COPY db/index.js ./db/
 RUN chown -R appuser:appuser /app
 USER appuser
 

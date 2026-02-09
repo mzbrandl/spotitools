@@ -3,6 +3,7 @@ services:
     build:
       context: .
       target: server
+    user: "1000:1000"
     env_file: .env
     environment:
       - NODE_ENV=production
