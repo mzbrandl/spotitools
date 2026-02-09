@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import ClipLoader from "react-spinners/ClipLoader";
-import { css } from "@emotion/core";
-
+import { css } from '@emotion/react'
 import { playlistsAtom, SpotifyServiceContext } from "../../App";
 import { ListResult } from "../ListResult/ListResult";
 import { ReactComponent as Back } from "../../assets/back.svg";
@@ -77,9 +76,7 @@ export const AddModal: React.FC<IAddModalProps> = ({ trackUri, onClose }) => {
             ) : (
               <div className={styles.loadingPlaylists}>
                 <ClipLoader
-                  css={css`
-                  align-self: center;
-                `}
+                  cssOverride={{alignSelf: 'center'}}
                   size={30}
                   color={"#1db954"}
                   loading={true}

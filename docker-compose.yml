@@ -1,0 +1,26 @@
+services:
+  app:
+    build:
+      context: .
+      target: server
+    env_file: .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DB_PATH=/app/data/subscribers.db
+    volumes:
+      - ./db:/app/data:rw,Z
+    restart: always
+
+  webserver:
+    build:
+      context: .
+      target: webserver
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro,Z
+    depends_on:
+      - app
+    restart: always

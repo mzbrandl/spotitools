@@ -1,16 +1,18 @@
-import { useAtom } from "jotai";
-import React, { Children, ReactChildren } from "react";
-import { Redirect, Route, RouteProps } from "react-router-dom";
+import React from "react";
+import { Navigate } from "react-router-dom";
 
-interface AuthRouteProps extends RouteProps {
+interface AuthRouteProps {
   isLoggedIn: boolean;
+  children: React.ReactNode;
 }
 
-export const AuthRoute: React.FC<AuthRouteProps> = (props) => {
-  const isLoggedIn = props.isLoggedIn;
+export const AuthRoute: React.FC<AuthRouteProps> = ({
+  isLoggedIn,
+  children,
+}) => {
+  if (!isLoggedIn) {
+    return <Navigate to="/" replace />;
+  }
 
-  if (!isLoggedIn) return <Redirect to="/" />
-
-  return <Route {...props}>{props.children}</Route>;
-
-}
+  return <>{children}</>;
+};

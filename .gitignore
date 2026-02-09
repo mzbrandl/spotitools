@@ -2,6 +2,14 @@
 client_secret.json
 monthlyExportUsers.json
 
+# SQLite database (data, not code)
+db/*.db
+db/*.db-wal
+db/*.db-shm
+
+# Migration data (contains tokens)
+migration/subscribers.json
+
 # Logs
 logs
 *.log

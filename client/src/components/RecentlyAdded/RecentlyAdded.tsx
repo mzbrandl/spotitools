@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect, useMemo } from "react";
 import { ClipLoader } from "react-spinners";
-import { css } from "@emotion/core";
+import { css } from '@emotion/react'
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 

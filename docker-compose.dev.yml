@@ -1,0 +1,41 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: server
+    env_file: .env
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - DB_PATH=/app/data/subscribers.db
+    volumes:
+      - ./server.js:/app/server.js:z
+      - ./db/index.js:/app/db/index.js:z
+      - ./db:/app/data:z
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: client
+    environment:
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+      - WDS_SOCKET_PORT=0
+      - PROXY_TARGET=http://server:3001
+    volumes:
+      - ./client/src:/app/src:z
+      - ./client/public:/app/public:z
+      - client_node_modules:/app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - server
+    restart: unless-stopped
+
+volumes:
+  client_node_modules:

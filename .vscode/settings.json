@@ -3,5 +3,8 @@
     "html.format.wrapLineLength": 220,
     "cSpell.words": [
         "Spotitools"
-    ]
+    ],
+    "[typescriptreact]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
+    }
 }

@@ -1,0 +1,9 @@
+node_modules
+client/node_modules
+.git
+.env
+db/
+migration/subscribers.json
+assets
+*.gif
+nohup.out

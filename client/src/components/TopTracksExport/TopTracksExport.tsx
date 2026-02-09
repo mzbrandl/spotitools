@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
 import ClipLoader from "react-spinners/ClipLoader";
-import { css } from "@emotion/core";
-
+import { css } from '@emotion/react'
 import styles from "./TopTracksExport.module.scss";
-import FormGroup from "@mui/material/FormGroup/FormGroup";
-import FormControlLabel from "@mui/material/FormControlLabel/FormControlLabel";
-import Switch from "@mui/material/Switch/Switch";
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from "@mui/material/Switch";
 import { alpha, styled } from '@mui/material/styles';
 
 
@@ -68,9 +66,7 @@ export const TopTracksExport = () => {
       {isLoading ?
         <div className={styles.loadingPlaylists}>
           <ClipLoader
-            css={css`
-          align-self: center;
-          `}
+            cssOverride={{alignSelf: 'center'}}
             size={30}
             color={"#1db954"}
             loading={true}
