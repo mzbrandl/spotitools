@@ -28,10 +28,10 @@
   "dependencies": {
     "better-sqlite3": "^11.0.0",
     "dotenv": "^16.4.0",
-    "cookie-parser": "^1.4.5",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "cross-env": "^7.0.3",
-    "express": "^4.17.1",
+    "express": "^4.22.1",
     "node-schedule": "^2.1.0",
     "querystring": "^0.2.0",
     "request": "^2.88.2",
