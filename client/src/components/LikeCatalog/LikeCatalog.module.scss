@@ -66,3 +66,31 @@
     }
   }
 }
+
+.scroller {
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  // Full-bleed scroller so the scrollbar reaches the window edge,
+  // while list items stay centered via rowInner below.
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+}
+
+.virtualContainer {
+  width: 100%;
+  position: relative;
+}
+
+.rowOuter {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.rowInner {
+  width: 100%;
+  max-width: 800px;
+  padding: 0 1em;
+  box-sizing: border-box;
+}
