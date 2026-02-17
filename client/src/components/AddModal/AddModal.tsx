@@ -69,7 +69,7 @@ export const AddModal: React.FC<IAddModalProps> = ({ trackUri, onClose }) => {
                     id={playlist.id}
                     title={playlist.name}
                     secondaryText={`by ${playlist.owner.display_name}`}
-                    cover={playlist.images[0]}
+                    cover={playlist.images?.[0]}
                     handleClick={() => onAddClick(playlist.id)}
                   />
                 ))

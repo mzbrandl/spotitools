@@ -83,7 +83,7 @@ export const PlaylistCombiner = () => {
                   id={playlist.id}
                   title={playlist.name}
                   secondaryText={`by ${playlist.owner.display_name}`}
-                  cover={playlist.images[0]}
+                  cover={playlist.images?.[0]}
                   isChecked={selectedPlaylists.includes(playlist)}
                   handleClick={!loading ? handelSelectedPlaylists : undefined}
                 />
