@@ -66,16 +66,15 @@ export const LikeCatalog = () => {
       </p>
       {!!likedTracksFiltered ? <div
         ref={parentRef}
+        className={styles.scroller}
         style={{
           height: listHeight,
-          overflow: 'auto', // Make it scroll!
         }}
       >
         <div
+          className={styles.virtualContainer}
           style={{
             height: `${rowVirtualizer.getTotalSize()}px`,
-            width: '100%',
-            position: 'relative',
           }}
         >
           {rowVirtualizer.getVirtualItems().map((virtualItem) => {
@@ -83,37 +82,39 @@ export const LikeCatalog = () => {
             return (
               <div
                 key={virtualItem.key}
+                className={styles.rowOuter}
                 style={{
                   position: 'absolute',
                   top: 0,
                   left: 0,
-                  width: '100%',
                   transform: `translateY(${virtualItem.start}px)`,
                 }}
               >
-                <ListResult
-                  key={track.id + virtualItem.index}
-                  id={track.id}
-                  title={track.name}
-                  secondaryText={`by ${track.artists
-                    .map((a) => a.name)
-                    .toString()}`}
-                  cover={track.album.images[0]}
-                  handleClick={() => spotifyService?.playTrack(track)}
-                >
-                  <div style={{ display: "flex", alignItems: "center" }}>
-                    <ThreeDots
-                      width={32}
-                      height={32}
-                      style={{ fill: "white", padding: "6px 3px" }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setTrackUri(track.uri)
-                        setShowAddModal(true)
-                      }}
-                    />
-                  </div>
-                </ListResult>
+                <div className={styles.rowInner}>
+                  <ListResult
+                    key={track.id + virtualItem.index}
+                    id={track.id}
+                    title={track.name}
+                    secondaryText={`by ${track.artists
+                      .map((a) => a.name)
+                      .toString()}`}
+                    cover={track.album.images[0]}
+                    handleClick={() => spotifyService?.playTrack(track)}
+                  >
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <ThreeDots
+                        width={32}
+                        height={32}
+                        style={{ fill: "white", padding: "6px 3px" }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setTrackUri(track.uri)
+                          setShowAddModal(true)
+                        }}
+                      />
+                    </div>
+                  </ListResult>
+                </div>
               </div>
             )
           })}

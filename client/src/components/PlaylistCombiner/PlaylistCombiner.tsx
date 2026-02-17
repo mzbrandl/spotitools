@@ -18,6 +18,22 @@ export const PlaylistCombiner = () => {
   const [filter, setFilter] = useState("");
   const [loading, setLoading] = useState(false)
 
+  const headerRef = React.useRef<HTMLDivElement>(null)
+  const [listHeight, setListHeight] = useState(200)
+
+  useEffect(() => {
+    const check = () => {
+      if (headerRef.current) {
+        const { bottom } = headerRef.current.getBoundingClientRect()
+        setListHeight(window.innerHeight - bottom - 20)
+      }
+    }
+
+    check()
+    window.addEventListener("resize", check)
+    return () => window.removeEventListener("resize", check)
+  }, [playlists, filter, loading])
+
   const onCreatePlaylistClick = async () => {
     setLoading(true)
     const url = await spotifyService?.queuePlaylists(selectedPlaylists);
@@ -49,56 +65,62 @@ export const PlaylistCombiner = () => {
 
   return (
     <div className={styles.playlistCombiner}>
-      <p>
-        Select the playlists you want to merge. Duplicate songs will be filtered.
-      </p>
       <div className={styles.horWraper}>
         <div className={styles.playlistRows}>
-          <div className={styles.controls}>
-            <input
-              type="search"
-              className={styles.filter}
-              placeholder="Filter"
-              value={filter}
-              onChange={(e) => {
-                setFilter(e.target.value);
-              }}
-            />
-            <button className={styles.clearBtn} onClick={clearSelection}>
-              Clear
-            </button>
-          </div>
-          {!!playlists && playlists.length > 0 ? (
-            playlists
-              .filter(
-                (p) =>
-                  p.name.toLowerCase().includes(filter.toLowerCase()) ||
-                  p.owner.display_name
-                    ?.toLowerCase()
-                    .includes(filter.toLowerCase())
-              )
-              .map((playlist, key) => (
-                <ListResult
-                  key={key}
-                  id={playlist.id}
-                  title={playlist.name}
-                  secondaryText={`by ${playlist.owner.display_name}`}
-                  cover={playlist.images?.[0]}
-                  isChecked={selectedPlaylists.includes(playlist)}
-                  handleClick={!loading ? handelSelectedPlaylists : undefined}
-                />
-              ))
-          ) : (
-            <div className={styles.loadingPlaylists}>
-              <ClipLoader
-                cssOverride={{alignSelf: 'center'}}
-                size={30}
-                color={"#1db954"}
-                loading={true}
+          <div ref={headerRef} className={styles.header}>
+            <p>
+              Select the playlists you want to merge. Duplicate songs will be filtered.
+            </p>
+            <div className={styles.controls}>
+              <input
+                type="search"
+                className={styles.filter}
+                placeholder="Filter"
+                value={filter}
+                onChange={(e) => {
+                  setFilter(e.target.value);
+                }}
               />
-              <span>Loading playlists...</span>
+              <button className={styles.clearBtn} onClick={clearSelection}>
+                Clear
+              </button>
             </div>
-          )}
+          </div>
+          <div className={styles.scroller} style={{ height: listHeight }}>
+            <div className={styles.scrollerInner}>
+              {!!playlists && playlists.length > 0 ? (
+                playlists
+                  .filter(
+                    (p) =>
+                      p.name.toLowerCase().includes(filter.toLowerCase()) ||
+                      p.owner.display_name
+                        ?.toLowerCase()
+                        .includes(filter.toLowerCase())
+                  )
+                  .map((playlist, key) => (
+                    <ListResult
+                      key={key}
+                      id={playlist.id}
+                      title={playlist.name}
+                      secondaryText={`by ${playlist.owner.display_name}`}
+                      cover={playlist.images?.[0]}
+                      isChecked={selectedPlaylists.includes(playlist)}
+                      handleClick={!loading ? handelSelectedPlaylists : undefined}
+                    />
+                  ))
+              ) : (
+                <div className={styles.loadingPlaylists}>
+                  <ClipLoader
+                    cssOverride={{ alignSelf: 'center' }}
+                    size={30}
+                    color={"#1db954"}
+                    loading={true}
+                  />
+                  <span>Loading playlists...</span>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
         <button
           onClick={onCreatePlaylistClick}

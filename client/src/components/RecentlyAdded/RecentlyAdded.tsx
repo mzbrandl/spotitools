@@ -60,16 +60,15 @@ export const RecentlyAdded = () => {
       </p>
       {recentlyAddedTracks && <div
         ref={parentRef}
+        className={styles.scroller}
         style={{
           height: listHeight,
-          overflow: 'auto', // Make it scroll!
         }}
       >
         <div
+          className={styles.virtualContainer}
           style={{
             height: `${rowVirtualizer.getTotalSize()}px`,
-            width: '100%',
-            position: 'relative',
           }}
         >
           {rowVirtualizer.getVirtualItems().map((virtualItem) => {
@@ -77,25 +76,27 @@ export const RecentlyAdded = () => {
             return (
               <div
                 key={virtualItem.key}
+                className={styles.rowOuter}
                 style={{
                   position: 'absolute',
                   top: 0,
                   left: 0,
-                  width: '100%',
                   transform: `translateY(${virtualItem.start}px)`,
                 }}
               >
-                <ListResult
-                  key={track.id + virtualItem.index}
-                  id={track.id}
-                  title={track.name}
-                  secondaryText={`by ${track.artists
-                    .map((a) => a.name)
-                    .toString()}`}
-                  tertiaryText={`Added to ${recentlyAddedTracks[virtualItem.index].playlistName}, ${dayjs().to(dayjs(recentlyAddedTracks[virtualItem.index].added_at))}`}
-                  handleClick={() => spotifyService?.playTrack(track)}
-                  cover={track.album.images[0]}
-                />
+                <div className={styles.rowInner}>
+                  <ListResult
+                    key={track.id + virtualItem.index}
+                    id={track.id}
+                    title={track.name}
+                    secondaryText={`by ${track.artists
+                      .map((a) => a.name)
+                      .toString()}`}
+                    tertiaryText={`Added to ${recentlyAddedTracks[virtualItem.index].playlistName}, ${dayjs().to(dayjs(recentlyAddedTracks[virtualItem.index].added_at))}`}
+                    handleClick={() => spotifyService?.playTrack(track)}
+                    cover={track.album.images[0]}
+                  />
+                </div>
               </div>
             )
           })}
