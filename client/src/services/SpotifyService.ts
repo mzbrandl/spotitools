@@ -27,9 +27,16 @@ export default class SpotifyService implements ISpotifyService {
         limit: 50, //max limit
         offset,
       });
-      return res.items.length + offset === res.total
-        ? res.items
-        : [...res.items, ...(await getPlaylistsRecursive(offset + 50))];
+      const normalizedItems = res.items.map((playlist) => ({
+        ...playlist,
+        images: playlist.images ?? [],
+      }));
+      return normalizedItems.length + offset === res.total
+        ? normalizedItems
+        : [
+            ...normalizedItems,
+            ...(await getPlaylistsRecursive(offset + 50)),
+          ];
     };
     return getPlaylistsRecursive(0);
   }

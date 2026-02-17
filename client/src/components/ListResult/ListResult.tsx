@@ -5,7 +5,7 @@ import styles from "./ListResult.module.scss";
 export interface IListResultProps {
   id: string;
   title: string;
-  cover: SpotifyApi.ImageObject;
+  cover?: SpotifyApi.ImageObject;
   secondaryText?: string;
   tertiaryText?: string;
   isChecked?: boolean;
@@ -31,11 +31,11 @@ export const ListResult: React.FC<IListResultProps> = ({
       <div className={styles.overlay}>
         <img
           className={styles.cover}
-          src={cover?.url}
+          src={cover?.url ?? ""}
           alt="cover"
           height={60}
           width={60}
-        ></img>
+        />
         <div className={styles.textWrapper}>
           <h5>{title}</h5>
           {secondaryText && (

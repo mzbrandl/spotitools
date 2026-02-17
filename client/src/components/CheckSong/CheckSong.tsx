@@ -77,7 +77,7 @@ export const CheckSong = () => {
           id={track.id}
           title={track.name}
           secondaryText={`by ${track.artists.map((a) => a.name).toString()}`}
-          cover={track.album.images[0]}
+          cover={track.album.images?.[0]}
         // handleClick={() => setCurrentPlayback()}
         >
           <div style={{ color: "white", display: "flex", alignItems: "center" }}>
@@ -94,7 +94,7 @@ export const CheckSong = () => {
             id={t.id}
             title={t.name}
             secondaryText={`by ${t.artists.map((a) => a.name).toString()}`}
-            cover={t.album.images[0]}
+            cover={t.album.images?.[0]}
             isChecked={t.id === track?.id}
             handleClick={() => {
               setTrack(t);
@@ -115,7 +115,7 @@ export const CheckSong = () => {
                 pt.items.find((i) => i.track.id === track.id || `${i.track.name}:${(i.track as SpotifyApi.TrackObjectFull).artists[0].name}`.toLowerCase() === `${track.name}:${track.artists[0].name}`.toLowerCase())
                   ?.added_at as string
               ).toLocaleDateString()}`}
-              cover={pt.playlist.images[0]}
+              cover={pt.playlist.images?.[0]}
               handleClick={() => window.location.href = pt.playlist.external_urls.spotify}
             />
           ))}
